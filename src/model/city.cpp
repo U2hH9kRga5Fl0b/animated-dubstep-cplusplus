@@ -19,14 +19,14 @@
 
 #include <set>
 
-coord::coord(double x_, double y_) : x{x_}, y{y_} {}
-coord::coord(const coord& other) : coord{other.x, other.y} {}
-coord::coord() : coord{rand() / (double) RAND_MAX, rand() / (double) RAND_MAX} {}
-coord::~coord() {}
-double coord::dist(const coord& other) const { double dx = other.x-x; double dy=other.y-y; return sqrt(dx*dx+dy*dy);}
+Coord::Coord(double x_, double y_) : x{x_}, y{y_} {}
+Coord::Coord(const Coord& other) : Coord{other.x, other.y} {}
+Coord::Coord() : Coord{rand() / (double) RAND_MAX, rand() / (double) RAND_MAX} {}
+Coord::~Coord() {}
+double Coord::dist(const Coord& other) const { double dx = other.x-x; double dy=other.y-y; return sqrt(dx*dx+dy*dy);}
 
 
-city::city(int num_requests_, int num_landfills_, int num_stagingareas_, int num_trucks_) :
+City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num_trucks_) :
 #if ALL_YARD_COMBOS
 	num_actions      {num_requests_+4*num_landfills_+4*5*2*num_stagingareas_},
 #else
@@ -41,7 +41,7 @@ city::city(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	actions          {nullptr           },
 	durations        {num_locations     },
 	possibles        {num_actions       },
-	coords           {new coord[num_locations]},
+	coords           {new Coord[num_locations]},
 	trucks           {new truck_types[num_trucks]},
 	donttouch        {                  }
 {
@@ -49,7 +49,7 @@ city::city(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 
 	for (int i = 0; i < num_landfills; i++)
 	{
-		landfill l { ndx++ };
+		Landfill l { ndx++ };
 		donttouch.push_back(Action{l, six    });
 		donttouch.push_back(Action{l, nine   });
 		donttouch.push_back(Action{l, twelve });
@@ -64,7 +64,7 @@ city::city(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 
 	for (int t = 0; t < num_stagingareas; t++)
 	{
-		yard y {ndx++};
+		Yard y {ndx++};
 #if ALL_YARD_COMBOS
 		dumpster_size sizes[] = {none, six, nine, twelve, sixteen};
 		operation ops[] = {Store, Unstore};
@@ -132,7 +132,7 @@ city::city(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	std::cout << "average number of possibles actions: " << (avg_num_possibles / num_actions) << std::endl;
 }
 
-city::~city()
+City::~City()
 {
 	delete[] coords;
 	delete[] trucks;
@@ -140,7 +140,7 @@ city::~city()
 
 
 
-std::ostream& operator<<(std::ostream& out, const city& c)
+std::ostream& operator<<(std::ostream& out, const City& c)
 {
 	out << "actions:\n";
 	for (int i=0;i<c.num_actions;i++)

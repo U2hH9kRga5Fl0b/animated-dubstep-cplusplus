@@ -7,10 +7,10 @@
 
 #include "seed/random.h"
 
-solution* get_random_solution(const city* c)
+Solution* get_random_solution(const City* c)
 {
 	int len = c->num_actions;
-	solution* sol = new solution { c, c->num_actions };
+	Solution* sol = new Solution { c, c->num_actions };
 
 	for (int d = 0; d < c->num_trucks; d++)
 	{

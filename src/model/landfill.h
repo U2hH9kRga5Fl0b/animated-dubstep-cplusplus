@@ -8,11 +8,11 @@
 #ifndef LANDFILL_H_
 #define LANDFILL_H_
 
-class landfill
+class Landfill
 {
 public:
-	landfill(int loc);
-	~landfill();
+	Landfill(int loc);
+	~Landfill();
 
 	long waittime;
 	int location;

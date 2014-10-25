@@ -14,22 +14,22 @@
 
 #include <vector>
 
-class coord
+class Coord
 {
 public:
-	coord();
-	coord(double x, double y);
-	coord(const coord& other);
-	~coord();
-	double dist(const coord& other) const;
+	Coord();
+	Coord(double x, double y);
+	Coord(const Coord& other);
+	~Coord();
+	double dist(const Coord& other) const;
 	double x, y;
 };
 
-class city
+class City
 {
 public:
-	city(int num_requests, int num_landfills, int num_stagingareas, int num_trucks);
-	~city();
+	City(int num_requests, int num_landfills, int num_stagingareas, int num_trucks);
+	~City();
 
 	inline int get_time_to(int from, int to) const
 	{
@@ -56,10 +56,10 @@ public:
 	const Action *actions;
 	intarray durations;
 	intarray possibles;
-	coord *coords;
+	Coord *coords;
 	truck_types* trucks;
 
-	friend std::ostream& operator<<(std::ostream& out, const city& a);
+	friend std::ostream& operator<<(std::ostream& out, const City& a);
 private:
 	std::vector<Action> donttouch;
 };

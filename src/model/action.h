@@ -19,8 +19,8 @@ class Action
 {
 public:
 	Action(int loc);
-	Action(const landfill& l, dumpster_size s);
-	Action(const yard& l, dumpster_size in, dumpster_size out, operation o);
+	Action(const Landfill& l, dumpster_size s);
+	Action(const Yard& l, dumpster_size in, dumpster_size out, operation o);
 	~Action() {}
 
 	operation op;

@@ -75,7 +75,7 @@ namespace
 		return (state*) viz;
 	}
 
-	void get_bounds(const city* c, double&xmin, double&xmax, double&ymin, double&ymax)
+	void get_bounds(const City* c, double&xmin, double&xmax, double&ymin, double&ymax)
 	{
 		xmin = ymin =  DBL_MAX;
 		xmax = ymax = -DBL_MAX;
@@ -109,7 +109,7 @@ namespace
 #endif
 	}
 
-	void print_sol_to_mat(const solution* sol, state* istate)
+	void print_sol_to_mat(const Solution* sol, state* istate)
 	{
 		double minx, miny, maxx, maxy;
 		get_bounds(sol->c, minx, maxx, miny, maxy);
@@ -126,7 +126,7 @@ namespace
 			cv::Scalar& color = istate->get_color(d);
 
 			// draw first line
-			coord& c = sol->c->coords[sol->c->start_location];
+			Coord& c = sol->c->coords[sol->c->start_location];
 			double x = istate->mat.cols * (c.x - minx) / (maxx - minx);
 			double y = istate->mat.rows * (c.y - miny) / (maxy - miny);
 			cv::Point prev((int) c.x, (int) c.y);
@@ -163,7 +163,7 @@ namespace
 		istate->vid.write(istate->mat);
 	}
 
-	void print_city_to_mat(const city* c, state* istate)
+	void print_city_to_mat(const City* c, state* istate)
 	{
 		double minx, miny, maxx, maxy;
 		get_bounds(c, minx, maxx, miny, maxy);
@@ -191,7 +191,7 @@ vizualizer::~vizualizer()
 	delete get_state(internal_state);
 }
 
-void vizualizer::show(const solution* sol)
+void vizualizer::show(const Solution* sol)
 {
 	std::lock_guard<std::mutex> lock{get_state(internal_state)->mut};
 	clear_mat(get_state(internal_state));
@@ -203,7 +203,7 @@ void vizualizer::show(const solution* sol)
 	cv::waitKey(image_update_time);
 }
 
-void vizualizer::show(const city* c)
+void vizualizer::show(const City* c)
 {
 	std::lock_guard<std::mutex> lock{get_state(internal_state)->mut};
 	clear_mat(get_state(internal_state));

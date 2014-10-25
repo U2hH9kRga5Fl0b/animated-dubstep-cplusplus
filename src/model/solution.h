@@ -10,11 +10,11 @@
 
 #include "model/city.h"
 
-class solution
+class Solution
 {
 public:
-	solution(const city* c, int starting_length);
-	virtual ~solution();
+	Solution(const City* c, int starting_length);
+	virtual ~Solution();
 
 	void service(int driver, int stop, int action);
 	int get_action(int driver, int stop) const;
@@ -29,11 +29,11 @@ public:
 
 	void ensure_valid() const;
 
-	friend std::ostream& operator<<(std::ostream& out, const solution& sol);
+	friend std::ostream& operator<<(std::ostream& out, const Solution& sol);
 
 	void human_readable(std::ostream& out) const;
 
-	const city* c;
+	const City* c;
 private:
 
 	intarray stops;

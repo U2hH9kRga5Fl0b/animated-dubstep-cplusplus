@@ -12,5 +12,5 @@
 #define HALF_HOUR (30 * 60)
 
 
-landfill::landfill(int loc) : waittime{HALF_HOUR + rand() % HALF_HOUR}, location{loc} {}
-landfill::~landfill() {}
+Landfill::Landfill(int loc) : waittime{HALF_HOUR + rand() % HALF_HOUR}, location{loc} {}
+Landfill::~Landfill() {}

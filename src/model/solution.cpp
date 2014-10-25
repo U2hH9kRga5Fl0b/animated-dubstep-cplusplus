@@ -9,7 +9,7 @@
 
 #include "common.h"
 
-solution::solution(const city* c_, int starting_length) :
+Solution::Solution(const City* c_, int starting_length) :
 	c{c_},
 	stops{c->num_trucks, starting_length},
 	drivers{new int[c->num_actions]},
@@ -32,14 +32,14 @@ solution::solution(const city* c_, int starting_length) :
 
 
 
-solution::~solution()
+Solution::~Solution()
 {
 	delete[] drivers;
 	delete[] stop_numbers;
 	delete[] lens;
 }
 
-void solution::service(int driver, int stop, int action)
+void Solution::service(int driver, int stop, int action)
 {
 	if (action < 0)
 	{
@@ -61,14 +61,14 @@ void solution::service(int driver, int stop, int action)
 	ensure_valid();
 }
 
-int solution::get_action(int driver, int stop) const
+int Solution::get_action(int driver, int stop) const
 {
 	INBOUNDS(0, driver, get_num_drivers());
 	INBOUNDS(0, stop, stops.cols());
 	return stops.at(driver, stop);
 }
 
-int solution::get_num_serviced() const
+int Solution::get_num_serviced() const
 {
 	int ret_val = 0;
 
@@ -85,7 +85,7 @@ int solution::get_num_serviced() const
 	return ret_val;
 }
 
-int solution::get_time() const
+int Solution::get_time() const
 {
 	int ret_val = 0;
 	int start_location = c->start_location;
@@ -112,13 +112,13 @@ int solution::get_time() const
 	return ret_val;
 }
 
-bool solution::already_serviced(int action) const
+bool Solution::already_serviced(int action) const
 {
 	INBOUNDS(0, action, c->num_actions);
 	return drivers[action] >= 0;
 }
 
-void solution::ensure_valid() const
+void Solution::ensure_valid() const
 {
 	if (!DEBUG)
 	{
@@ -222,7 +222,7 @@ void solution::ensure_valid() const
 	delete counts;
 }
 
-std::ostream& operator<<(std::ostream& out, const solution& sol)
+std::ostream& operator<<(std::ostream& out, const Solution& sol)
 {
 	if (DEBUG)
 	{
@@ -272,7 +272,7 @@ std::ostream& operator<<(std::ostream& out, const solution& sol)
 	return out;
 }
 
-void solution::human_readable(std::ostream& out) const
+void Solution::human_readable(std::ostream& out) const
 {
 	std::cout << "total time: " << get_time() << std::endl;
 	for (int d = 0; d < get_num_drivers(); d++)

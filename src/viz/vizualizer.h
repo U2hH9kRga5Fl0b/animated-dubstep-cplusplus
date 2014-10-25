@@ -17,8 +17,8 @@ public:
 	virtual ~vizualizer();
 
 	void pause(int length=0);
-	void show(const solution* sol);
-	void show(const city* c);
+	void show(const Solution* sol);
+	void show(const City* c);
 	void snapshot(std::string file);
 
 	// don't touch

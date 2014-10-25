@@ -53,7 +53,7 @@ Action::Action(int loc) :
 	}
 }
 
-Action::Action(const landfill& l, dumpster_size s) :
+Action::Action(const Landfill& l, dumpster_size s) :
 	op{Dump},
 	in{s},
 	out{s},
@@ -66,7 +66,7 @@ Action::Action(const landfill& l, dumpster_size s) :
 	accessible[0] = accessible[1] = accessible[2] = true;
 }
 
-Action::Action(const yard& y, dumpster_size in, dumpster_size out, operation o) :
+Action::Action(const Yard& y, dumpster_size in, dumpster_size out, operation o) :
 	op{o},
 	in{in},
 	out{out},

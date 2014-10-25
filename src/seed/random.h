@@ -10,6 +10,6 @@
 
 #include "model/solution.h"
 
-solution* get_random_solution(const city* c);
+Solution* get_random_solution(const City* c);
 
 #endif /* RANDOM_H_ */
