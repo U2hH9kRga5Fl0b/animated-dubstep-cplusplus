@@ -32,8 +32,9 @@ public:
 	friend std::ostream& operator<<(std::ostream& out, const solution& sol);
 
 	void human_readable(std::ostream& out) const;
-private:
+
 	const city* c;
+private:
 
 	intarray stops;
 

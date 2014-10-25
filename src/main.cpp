@@ -7,6 +7,7 @@
 
 #include "model/city.h"
 #include "seed/random.h"
+#include "viz/vizualizer.h"
 
 #include <fstream>
 
@@ -20,9 +21,13 @@ int main(int argc, char **argv)
 	}
 
 	solution* sol = get_random_solution(&c);
-
 	std::cout << *sol << std::endl;
-
 	sol->human_readable(std::cout);
+
+	vizualizer v {"foobar"};
+	v.show(sol);
+	std::cout << "should be showing." << std::endl;
+	v.pause();
+
 }
 

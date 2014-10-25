@@ -19,7 +19,9 @@
 
 #include <set>
 
-coord::coord() : x{rand() / (double) RAND_MAX}, y{rand() / (double) RAND_MAX} {}
+coord::coord(double x_, double y_) : x{x_}, y{y_} {}
+coord::coord(const coord& other) : coord{other.x, other.y} {}
+coord::coord() : coord{rand() / (double) RAND_MAX, rand() / (double) RAND_MAX} {}
 coord::~coord() {}
 double coord::dist(const coord& other) const { double dx = other.x-x; double dy=other.y-y; return sqrt(dx*dx+dy*dy);}
 

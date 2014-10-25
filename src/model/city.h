@@ -18,6 +18,8 @@ class coord
 {
 public:
 	coord();
+	coord(double x, double y);
+	coord(const coord& other);
 	~coord();
 	double dist(const coord& other) const;
 	double x, y;
