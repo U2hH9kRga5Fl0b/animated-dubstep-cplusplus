@@ -53,7 +53,7 @@ public:
 
 	int start_location;
 
-	const action *actions;
+	const Action *actions;
 	intarray durations;
 	intarray possibles;
 	coord *coords;
@@ -61,7 +61,7 @@ public:
 
 	friend std::ostream& operator<<(std::ostream& out, const city& a);
 private:
-	std::vector<action> donttouch;
+	std::vector<Action> donttouch;
 };
 
 

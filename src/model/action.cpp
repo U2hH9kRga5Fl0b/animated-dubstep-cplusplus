@@ -36,7 +36,7 @@ namespace
 	}
 }
 
-action::action(int loc) :
+Action::Action(int loc) :
 	op{get_random_operation()},
 	in{op == Pickup ? none : get_random_size()},
 	out{op == Dropoff ? none : get_random_size()},
@@ -53,7 +53,7 @@ action::action(int loc) :
 	}
 }
 
-action::action(const landfill& l, dumpster_size s) :
+Action::Action(const landfill& l, dumpster_size s) :
 	op{Dump},
 	in{s},
 	out{s},
@@ -66,7 +66,7 @@ action::action(const landfill& l, dumpster_size s) :
 	accessible[0] = accessible[1] = accessible[2] = true;
 }
 
-action::action(const yard& y, dumpster_size in, dumpster_size out, operation o) :
+Action::Action(const yard& y, dumpster_size in, dumpster_size out, operation o) :
 	op{o},
 	in{in},
 	out{out},
@@ -81,7 +81,7 @@ action::action(const yard& y, dumpster_size in, dumpster_size out, operation o) 
 
 #define ac(x) (a.accessible[x]?'1':'0')
 
-std::ostream& operator<<(std::ostream& out, const action& a)
+std::ostream& operator<<(std::ostream& out, const Action& a)
 {
 	return out
 	    << '[' << operation_to_char(a.op) << ']'

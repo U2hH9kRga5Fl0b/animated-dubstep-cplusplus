@@ -15,13 +15,13 @@
 #include "model/dumpstersize.h"
 #include "model/operation.h"
 
-class action
+class Action
 {
 public:
-	action(int loc);
-	action(const landfill& l, dumpster_size s);
-	action(const yard& l, dumpster_size in, dumpster_size out, operation o);
-	~action() {}
+	Action(int loc);
+	Action(const landfill& l, dumpster_size s);
+	Action(const yard& l, dumpster_size in, dumpster_size out, operation o);
+	~Action() {}
 
 	operation op;
 	dumpster_size in;
@@ -33,7 +33,7 @@ public:
 	bool accessible[3];
 	int value;
 
-	friend std::ostream& operator<<(std::ostream& out, const action& a);
+	friend std::ostream& operator<<(std::ostream& out, const Action& a);
 };
 
 #endif /* ACTION_H_ */

@@ -50,10 +50,10 @@ city::city(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	for (int i = 0; i < num_landfills; i++)
 	{
 		landfill l { ndx++ };
-		donttouch.push_back(action{l, six    });
-		donttouch.push_back(action{l, nine   });
-		donttouch.push_back(action{l, twelve });
-		donttouch.push_back(action{l, sixteen});
+		donttouch.push_back(Action{l, six    });
+		donttouch.push_back(Action{l, nine   });
+		donttouch.push_back(Action{l, twelve });
+		donttouch.push_back(Action{l, sixteen});
 	}
 
 	truck_types tt[] = {small, medium, large};
@@ -73,20 +73,20 @@ city::city(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 		for (int k=0;k<2;k++)
 		{
 			if (i==j) continue;
-			donttouch.push_back(action{y, sizes[i], sizes[j], ops[k]});
+			donttouch.push_back(Action{y, sizes[i], sizes[j], ops[k]});
 		}
 #else
 		dumpster_size sizes[] = {six, nine, twelve, sixteen};
 		for (int i=0;i<4;i++)
 		{
-			donttouch.push_back(action{y, sizes[i], none, Store});
-			donttouch.push_back(action{y, none, sizes[i], Unstore});
+			donttouch.push_back(Action{y, sizes[i], none, Store});
+			donttouch.push_back(Action{y, none, sizes[i], Unstore});
 		}
 #endif
 	}
 
 	for (int i = 0; i < num_requests; i++)
-		donttouch.push_back(action{ndx++});
+		donttouch.push_back(Action{ndx++});
 
 	if (ndx != num_locations)
 	{

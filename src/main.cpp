@@ -11,6 +11,9 @@
 
 #include <fstream>
 
+// add local search
+
+
 int main(int argc, char **argv)
 {
 	city c{70,4,4,10};
