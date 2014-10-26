@@ -9,8 +9,9 @@
 
 #include <cstdlib>
 #include <cmath>
+#include <sstream>
 
-#define DIST_SCALE 500
+#define DIST_SCALE 5000
 
 
 
@@ -38,11 +39,11 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	num_locations    {num_requests + num_landfills + num_stagingareas},
 	num_trucks       {num_trucks_       },
 	start_location   {0                 },
-	actions          {nullptr           },
 	durations        {num_locations     },
 	possibles        {num_actions       },
 	coords           {new Coord[num_locations]},
 	trucks           {new truck_types[num_trucks]},
+	actions          {nullptr           },
 	donttouch        {                  }
 {
 	int ndx = 0;
@@ -94,9 +95,13 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 		exit(-1);
 	}
 
+	double avg_drive_time = 0.0;
 	for (int i = 0; i < num_locations; i++)
 	for (int j = 0; j < num_locations; j++)
-		durations.at(i,j) = (int)(DIST_SCALE * coords[i].dist(coords[j]));
+	{
+		avg_drive_time += durations.at(i,j) = (int)(DIST_SCALE * coords[i].dist(coords[j]));
+	}
+	std::cout << "average drive time: " << (avg_drive_time / (60.0 * num_locations * (num_locations - 1))) << " minutes" << std::endl;
 
 	actions = donttouch.data();
 	if (num_actions != (int) donttouch.size())
@@ -111,7 +116,7 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	for (int i=0; i<num_actions; i++)
 	{
 		int ndx=0;
-		for (int j=0; j<num_actions; j++)
+		for (int j=num_actions-1; j>=0; j--)
 		{
 			if (!op_follows_op[actions[j].op][actions[i].op])
 			{
@@ -130,6 +135,15 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 		}
 	}
 	std::cout << "average number of possibles actions: " << (avg_num_possibles / num_actions) << std::endl;
+
+	for (int i = 0; i < num_actions; i++)
+	{
+		if (actions[i].op == Unstore || actions[i].op == Store)
+		{
+			start_location = actions[i].location;
+			break;
+		}
+	}
 }
 
 City::~City()
@@ -147,6 +161,20 @@ std::ostream& operator<<(std::ostream& out, const City& c)
 	{
 		out << std::setw(4) << i << ':' << c.actions[i] << std::endl;
 	}
+	out << "possibles:\n";
+	for (int i = 0; i < c.num_actions; i++)
+	{
+		out << std::setw(5) << i << ':';
+		for (int j = 0; j < c.num_actions; j++)
+		{
+			if (c.possibles.at(i,j) < 0)
+			{
+				break;
+			}
+			out << std::setw(3) << c.possibles.at(i, j) << ' ';
+		}
+		out << std::endl;
+	}
 	out << "trucks:\n";
 	for (int i=0;i<c.num_trucks;i++)
 	{
@@ -159,4 +187,40 @@ std::ostream& operator<<(std::ostream& out, const City& c)
 		out << c.durations << std::endl;
 	}
 	return out;
+}
+
+std::string City::get_decription(int location) const
+{
+	INBOUNDS(0, location, num_locations);
+	int anaction = -1;
+
+	for (int i = 0; i < num_actions; i++)
+	{
+		if (actions[i].location == location)
+		{
+			anaction = i;
+			break;
+		}
+	}
+	if (anaction < 0)
+	{
+		std::cerr << "unable to find an action for location " << location << std::endl;
+		trap();
+	}
+
+	operation op = actions[anaction].op;
+	if (op == Dump)
+	{
+		return "L";
+	}
+	else if (op == Unstore || op == Store)
+	{
+		return "Y";
+	}
+	else
+	{
+		std::stringstream ss;
+		ss << actions[anaction].in << "->" << actions[anaction].out;
+		return ss.str();
+	}
 }

@@ -40,7 +40,6 @@ public:
 	intarray& operator=(int num) {for (int i=0; i<m*n; i++) elems[i] = num; return *this;}
 
 
-
 	void set_num_columns(int new_num_cols, int fill=-1)
 	{
 		int *newelems = new int[m * new_num_cols];
@@ -56,6 +55,47 @@ public:
 		delete elems;
 		elems = newelems;
 		n = new_num_cols;
+	}
+
+	int binary_search(int row, int val, int valid_max) const
+	{
+		int min = 0;
+		if (valid_max <= min)
+		{
+			return min;
+		}
+		if (val > at(row, valid_max))
+		{
+			return valid_max;
+		}
+		if (val < at(row, min))
+		{
+			return min;
+		}
+
+		while (min+1 < valid_max)
+		{
+			int mid = (valid_max + min) / 2;
+
+			int a = at(row, mid);
+			if (a == val)
+			{
+				return mid;
+			}
+			if (a < val)
+			{
+				min = mid;
+				continue;
+			}
+			if (a > val)
+			{
+				valid_max = mid;
+			}
+		}
+
+		INBOUNDS(at(row, min), val, 1+at(row, valid_max));
+
+		return min;
 	}
 
 	friend std::ostream& operator<<(std::ostream& o, const intarray& a)

@@ -13,9 +13,9 @@ bool op_follows_op[6][6] =
 /*Pickup */   { false       , true        , true        , false       , false    , false     },
 /*Dropoff*/   { false       , false       , false       , true        , true     , false     },
 /*Store  */   { false       , false       , false       , true        , true     , false     },
-/*Unstore*/   { false       , false       , true        , false       , false    , false     },
+/*Unstore*/   { false       , true        , true        , false       , false    , false     },
 /*Dump   */   { true        , false       , false       , false       , false    , true      },
-/*Replace*/   { false       , false       , false       , false       , false    , false     },
+/*Replace*/   { false       , false       , false       , true        , true     , false     },
 };
 
 

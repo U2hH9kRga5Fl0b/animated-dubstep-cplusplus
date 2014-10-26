@@ -22,7 +22,7 @@ do                                                                              
 	{                                                                                      \
 		break;                                                                         \
 	}                                                                                      \
-	int si=x,mi=y,bi=z;                                                                    \
+	int si=(x),mi=(y),bi=(z);                                                              \
 	if (!(si<=mi) || !(mi<bi) || !(bi>si))                                                 \
 	{                                                                                      \
 		std::cerr << "bad indices: " << si << ", " << mi << ", " << bi << std::endl;   \
@@ -33,7 +33,7 @@ do                                                                              
 
 
 
-
+#define TIME_IN_A_DAY (60*60*12 * 5)
 
 
 

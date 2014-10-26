@@ -18,11 +18,15 @@ public:
 
 	void pause(int length=0);
 	void show(const Solution* sol);
+	void show(const Solution* sol, int time);
 	void show(const City* c);
+
 	void snapshot(std::string file);
 
 	// don't touch
 	void* internal_state;
+private:
+	void write_frame_of_video();
 };
 
 #endif /* VIZUALIZER_H_ */

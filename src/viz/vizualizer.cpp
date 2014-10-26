@@ -7,13 +7,13 @@
 
 #include "viz/vizualizer.h"
 
-#define USE_BACKGROUND_IMAGE 1
+#define USE_BACKGROUND_IMAGE 0
 
 #if USE_BACKGROUND_IMAGE
 #define BACKGROUND_IMAGE "background.jpg"
 #else
-#define default_width  500
-#define default_height 500
+#define default_width  1000
+#define default_height 1000
 #endif
 #define image_update_time 20
 #define SPACER
@@ -129,18 +129,26 @@ namespace
 			Coord& c = sol->c->coords[sol->c->start_location];
 			double x = istate->mat.cols * (c.x - minx) / (maxx - minx);
 			double y = istate->mat.rows * (c.y - miny) / (maxy - miny);
-			cv::Point prev((int) c.x, (int) c.y);
+			cv::Point prev((int) x, (int) y);
 			cv::circle(istate->mat, prev, 3, color);
 
 			// draw middle lines
 			for (int s = 0; s < length; s++)
 			{
-				int loc = sol->c->actions[sol->get_action(d, s)].location;
+				int loc = sol->c->get_action(sol->get_action(d, s)).location;
 				x = istate->mat.cols * (sol->c->coords[loc].x - minx) / (maxx - minx);
 				y = istate->mat.rows * (sol->c->coords[loc].y - miny) / (maxy - miny);
 
 				cv::Point next((int) x, (int) y);
 				cv::circle(istate->mat, next, 3, color);
+
+				if (prev.x == 0 && prev.y == 0)
+				{
+					std::cerr << x << ", " << y << std::endl;
+					std::cerr << "wth?" << std::endl;
+					trap();
+				}
+
 				cv::line(istate->mat, prev, next, color, 1, 8, 0);
 
 				prev = next;
@@ -158,9 +166,7 @@ namespace
 		s << "n=" << sol->get_num_serviced() << " t=" << sol->get_time();
 
 		cv::Scalar invert = istate->get_color(sol->get_num_drivers() + 1);
-
 		cv::putText(istate->mat, s.str(), cv::Point(0,20), CV_FONT_HERSHEY_PLAIN, 1.0, invert);
-		istate->vid.write(istate->mat);
 	}
 
 	void print_city_to_mat(const City* c, state* istate)
@@ -177,7 +183,59 @@ namespace
 
 			cv::Point prev((int) x, (int) y);
 			cv::circle(istate->mat, prev, 3, color);
+
+			prev.x = prev.x - 20;
+			prev.y = prev.y - 10;
+			cv::putText(istate->mat, c->get_decription(i), prev, CV_FONT_HERSHEY_PLAIN, 1.0, color);
 		}
+	}
+
+	void write_trucks_to_mat(const Solution* sol, const Coord* coords, int *actions, int time, state* istate)
+	{
+		double minx, miny, maxx, maxy;
+		get_bounds(sol->c, minx, maxx, miny, maxy);
+
+		for (int driver = 0; driver < sol->get_num_drivers(); driver++)
+		{
+			cv::Scalar& color = istate->get_color(driver);
+
+			double x = istate->mat.cols * (coords[driver].x - minx) / (maxx - minx);
+			double y = istate->mat.rows * (coords[driver].y - miny) / (maxy - miny);
+
+			cv::Point prev((int) x, (int) y);
+
+			// for now. Why will make it pretty later...
+			cv::circle(istate->mat, prev, 5, color);
+
+			std::stringstream ss;
+			if (actions[driver] == -1)
+			{
+				ss << "N";
+			}
+			else
+			{
+				operation last_op = sol->c->get_action(actions[driver]).op;
+				if (last_op == Store || last_op == Dropoff)
+				{
+					ss << "N";
+				}
+				else if (last_op == Pickup || last_op == Replace)
+				{
+					ss << "F(" << sol->c->get_action(actions[driver]).out << ")";
+				}
+				else
+				{
+					ss << "E(" << sol->c->get_action(actions[driver]).out << ")";
+				}
+			}
+			prev.x = prev.x - 20;
+			prev.y = prev.y + 20;
+			cv::putText(istate->mat, ss.str(), prev, CV_FONT_HERSHEY_PLAIN, 1.0, color);
+		}
+
+		std::stringstream ss;
+		ss << "time=" << time;
+		cv::putText(istate->mat, ss.str(), cv::Point(0, 40), CV_FONT_HERSHEY_PLAIN, 1.0, cv::Scalar{255,255,255});
 	}
 }
 
@@ -193,24 +251,52 @@ vizualizer::~vizualizer()
 
 void vizualizer::show(const Solution* sol)
 {
-	std::lock_guard<std::mutex> lock{get_state(internal_state)->mut};
-	clear_mat(get_state(internal_state));
-	print_city_to_mat(sol->c, get_state(internal_state));
-	print_sol_to_mat(sol, get_state(internal_state));
+	state* istate = get_state(internal_state);
+	std::lock_guard<std::mutex> lock{istate->mut};
+	clear_mat(istate);
+	print_city_to_mat(sol->c, istate);
+	print_sol_to_mat(sol, istate);
 
 	std::lock_guard<std::mutex> global{graphics_mutex};
-	imshow(get_state(internal_state)->name, get_state(internal_state)->mat);
+	imshow(istate->name, istate->mat);
+	write_frame_of_video();
 	cv::waitKey(image_update_time);
 }
 
-void vizualizer::show(const City* c)
+
+void vizualizer::show(const Solution* sol, int time)
 {
-	std::lock_guard<std::mutex> lock{get_state(internal_state)->mut};
-	clear_mat(get_state(internal_state));
-	print_city_to_mat(c, get_state(internal_state));
+	state* istate = get_state(internal_state);
+	std::lock_guard<std::mutex> lock{istate->mut};
+	clear_mat(istate);
+	print_city_to_mat(sol->c, istate);
+	print_sol_to_mat(sol, istate);
+
+	Coord* coords = new Coord[sol->get_num_drivers()];
+	int* actions = new int[sol->get_num_drivers()];
+
+	take_still_shot(sol, time, coords, actions);
+	write_trucks_to_mat(sol, coords, actions, time, istate);
+
+	delete[] coords;
+	delete[] actions;
 
 	std::lock_guard<std::mutex> global{graphics_mutex};
-	imshow(get_state(internal_state)->name, get_state(internal_state)->mat);
+	imshow(istate->name, istate->mat);
+	write_frame_of_video();
+	cv::waitKey(image_update_time);
+}
+
+
+void vizualizer::show(const City* c)
+{
+	state* istate = get_state(internal_state);
+	std::lock_guard<std::mutex> lock{istate->mut};
+	clear_mat(istate);
+	print_city_to_mat(c, istate);
+
+	std::lock_guard<std::mutex> global{graphics_mutex};
+	imshow(istate->name, istate->mat);
 	cv::waitKey(image_update_time);
 }
 
@@ -224,4 +310,12 @@ void vizualizer::snapshot(std::string file)
 	std::lock_guard<std::mutex> lock{get_state(internal_state)->mut};
 	std::lock_guard<std::mutex> global{graphics_mutex};
 	cv::imwrite(get_state(internal_state)->name, get_state(internal_state)->mat);
+}
+
+void vizualizer::write_frame_of_video()
+{
+	state* istate = get_state(internal_state);
+// must be already locked...
+//	std::lock_guard<std::mutex> lock{istate->mut};
+	istate->vid.write(istate->mat);
 }

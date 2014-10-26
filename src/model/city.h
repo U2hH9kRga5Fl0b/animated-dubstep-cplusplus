@@ -31,6 +31,12 @@ public:
 	City(int num_requests, int num_landfills, int num_stagingareas, int num_trucks);
 	~City();
 
+	inline int get_start_time(int first_action) const
+	{
+		INBOUNDS(0, first_action, num_actions);
+		return durations.at(start_location, actions[first_action].location) + actions[first_action].wait_time;
+	}
+
 	inline int get_time_to(int from, int to) const
 	{
 		INBOUNDS(0, from, num_actions);
@@ -44,6 +50,22 @@ public:
 		return actions[ndx].op == Unstore || actions[ndx].op == Pickup;
 	}
 
+	inline const Action& get_action(int index) const
+	{
+		INBOUNDS(0, index, num_actions);
+		return actions[index];
+	}
+
+	inline bool is_staging_area(int action) const
+	{
+		INBOUNDS(0, action, num_actions);
+		return actions[action].op == Unstore || actions[action].op == Store;
+	}
+
+	std::string get_decription(int location) const;
+
+
+
 	int num_actions;
 	int num_requests;
 	int num_landfills;
@@ -53,7 +75,6 @@ public:
 
 	int start_location;
 
-	const Action *actions;
 	intarray durations;
 	intarray possibles;
 	Coord *coords;
@@ -61,6 +82,7 @@ public:
 
 	friend std::ostream& operator<<(std::ostream& out, const City& a);
 private:
+	const Action *actions;
 	std::vector<Action> donttouch;
 };
 

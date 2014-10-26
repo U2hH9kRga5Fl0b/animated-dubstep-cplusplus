@@ -9,13 +9,11 @@
 
 #include <cstdlib>
 
-#define TOTAL_TIME (60 * 60 * 12)
-
 namespace
 {
 	operation get_random_operation()
 	{
-		if (rand() % 3)
+		if (!(rand() % 10))
 		{
 			return Replace;
 		}
@@ -31,7 +29,7 @@ namespace
 
 	dumpster_size get_random_size()
 	{
-		dumpster_size sizes[] = { six, nine, twelve, sixteen, };
+		dumpster_size sizes[] = { six, nine, nine, twelve, sixteen, nine, nine, nine, nine, nine, nine, nine, nine, };
 		return sizes[rand() % 4];
 	}
 }
@@ -41,8 +39,13 @@ Action::Action(int loc) :
 	in{op == Pickup ? none : get_random_size()},
 	out{op == Dropoff ? none : get_random_size()},
 	location{loc},
-	begin_time{rand() % 2 ? TOTAL_TIME / 2 : 0},
-	end_time {begin_time + TOTAL_TIME / 2 },
+#if 0
+	begin_time{rand() % 2 ? TIME_IN_A_DAY / 2 : 0},
+	end_time {begin_time + TIME_IN_A_DAY / 2 },
+#else
+	begin_time{0},
+	end_time {TIME_IN_A_DAY},
+#endif
 	wait_time{10 * 60},
 	value{1}
 {
@@ -59,7 +62,7 @@ Action::Action(const Landfill& l, dumpster_size s) :
 	out{s},
 	location{l.location},
 	begin_time{0},
-	end_time {TOTAL_TIME},
+	end_time {TIME_IN_A_DAY},
 	wait_time{l.waittime},
 	value{0}
 {
@@ -72,7 +75,7 @@ Action::Action(const Yard& y, dumpster_size in, dumpster_size out, operation o) 
 	out{out},
 	location{y.location},
 	begin_time{0},
-	end_time {TOTAL_TIME},
+	end_time {TIME_IN_A_DAY},
 	wait_time{15 * 60},
 	value{0}
 {

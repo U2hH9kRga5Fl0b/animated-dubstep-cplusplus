@@ -20,18 +20,21 @@ public:
 	int get_action(int driver, int stop) const;
 
 	int get_num_serviced() const;
+	int get_time_for(int driver) const;
 	int get_time() const;
+	bool already_serviced(int action) const;
 
 	inline int get_num_drivers() const { return stops.rows(); }
 	inline int get_length(int driver) const { return lens[driver]; }
 
-	bool already_serviced(int action) const;
+	Coord get_location_at(int driver, int time, int *action) const;
 
 	void ensure_valid() const;
 
 	friend std::ostream& operator<<(std::ostream& out, const Solution& sol);
 
 	void human_readable(std::ostream& out) const;
+	int get_last_time() const;
 
 	const City* c;
 private:
@@ -43,9 +46,11 @@ private:
 
 	int *lens;
 
-//	intarray times;
+	intarray times;
 //	int3array inventories;
 };
 
+
+void take_still_shot(const Solution* solution, int time, Coord *coords, int *actions);
 
 #endif /* SOLUTION_H_ */
