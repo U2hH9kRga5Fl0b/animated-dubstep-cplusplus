@@ -55,13 +55,9 @@ bool apply_nearest_valuable(Solution*sol, int driver, int stop)
 	int time = get_best_path(sol, lastaction, &path[0], PATH_LENGTH_SEARCH);
 	if (time < 0)
 	{
-		std::cout << (*sol) << std::endl;
-		std::cout << "last action= " << sol->c->get_action(lastaction) << std::endl;
-		int time = get_best_path(sol, lastaction, &path[0], PATH_LENGTH_SEARCH);
-
-
-
-
+//		std::cout << (*sol) << std::endl;
+//		std::cout << "last action= " << sol->c->get_action(lastaction) << std::endl;
+//		int time = get_best_path(sol, lastaction, &path[0], PATH_LENGTH_SEARCH);
 		return false;
 	}
 
