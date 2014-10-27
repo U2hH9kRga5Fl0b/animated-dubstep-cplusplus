@@ -15,7 +15,8 @@ Solution::Solution(const City* c_, int starting_length) :
 	drivers{new int[c->num_actions]},
 	stop_numbers{new int[c->num_actions]},
 	lens{new int[c->num_trucks]},
-	times{c->num_trucks, starting_length}
+	times{c->num_trucks, starting_length},
+	invs{c_}
 {
 	stops = -1;
 
@@ -57,6 +58,7 @@ void Solution::service(int driver, int stop, int action)
 	}
 	INBOUNDS(0, driver, get_num_drivers());
 	INBOUNDS(0, stop, stops.cols());
+	INBOUNDS(0, action, c->num_actions);
 
 	stops.at(driver, stop) = action;
 	drivers[action] = driver;
@@ -71,6 +73,8 @@ void Solution::service(int driver, int stop, int action)
 	{
 		times.at(driver, i) = times.at(driver, i-1) + c->get_time_to(stops.at(driver, i-1), stops.at(driver, i));
 	}
+
+	invs.action_performed(driver, stop, times.at(driver, stop), &c->get_action(action));
 
 	ensure_valid();
 }
@@ -158,7 +162,7 @@ void Solution::ensure_valid() const
 	for (int d = 0; d < num_drivers; d++)
 	{
 		int len = lens[d];
-		if (len < 0 || len >= rlen)
+		if (len < 0 || len > rlen)
 		{
 			std::cerr << (*this) << std::endl;
 			std::cerr << "there is a bad length for driver " << d << std::endl;
@@ -308,6 +312,9 @@ std::ostream& operator<<(std::ostream& out, const Solution& sol)
 
 		out << "times:" << std::endl;
 		out << sol.times << std::endl;
+
+		out << "inventories:" << std::endl;
+		out << sol.invs << std::endl;
 	}
 	else
 	{

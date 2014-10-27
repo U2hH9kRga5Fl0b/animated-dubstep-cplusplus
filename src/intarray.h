@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <climits>
 
 
 class intarray

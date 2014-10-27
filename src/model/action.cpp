@@ -7,6 +7,9 @@
 
 #include "model/action.h"
 
+#include "model/landfill.h"
+#include "model/yard.h"
+
 #include <cstdlib>
 
 namespace

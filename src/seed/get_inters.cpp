@@ -7,6 +7,9 @@
 
 #include "seed/random.h"
 
+#include <set>
+
+#include <algorithm>
 
 namespace
 {
@@ -32,6 +35,22 @@ typedef struct
 } stuff;
 
 
+struct altern
+{
+	int poss;
+	int time;
+
+	bool operator<(const altern& other) const
+	{
+		return time < other.time;
+	}
+
+	bool operator==(const altern& other) const
+	{
+		return other.poss == poss;
+	}
+};
+
 bool backtrack(stuff& stuff)
 {
 	if (stuff.cdepth + 1 >= stuff.outlen)
@@ -39,13 +58,10 @@ bool backtrack(stuff& stuff)
 		return false;
 	}
 
-//	std::cout << "considering inters: (depth=" << stuff.cdepth << ")" << std::endl;
-//	for (int i = 0; i <= stuff.cdepth; i++)
-//	{
-//		std::cout << stuff.cinters[i] << " " << stuff.city->get_action(stuff.cinters[i]) << "with time " << stuff.times[i] << std::endl;
-//	}
-
 	bool foundapath = false;
+
+
+	std::set<altern> nexts;
 
 	int lastaction = stuff.cdepth == -1 ? stuff.a1 : stuff.cinters[stuff.cdepth];
 	for (int p = 0; p < stuff.city->possibles.cols(); p++)
@@ -57,7 +73,6 @@ bool backtrack(stuff& stuff)
 		}
 		if (stuff.sol->already_serviced(poss))
 		{
-//			std::cout << "already serviced " << poss << std::endl;
 			continue;
 		}
 		for (int i = 0; i <= stuff.cdepth; i++)
@@ -68,29 +83,69 @@ bool backtrack(stuff& stuff)
 			}
 		}
 
-		stuff.cdepth++;
-		stuff.cinters[stuff.cdepth] = poss;
-		stuff.times[stuff.cdepth] = (stuff.cdepth == 0 ? 0 : stuff.times[stuff.cdepth-1]) + stuff.city->get_time_to(lastaction, stuff.cinters[stuff.cdepth]);
-		if (stuff.times[stuff.cdepth] >= stuff.besttime)
+		if (		stuff.cdepth >= 0 &&
+				stuff.city->get_action(stuff.cinters[stuff.cdepth]).op == Unstore &&
+				stuff.city->get_action(poss).op == Store
+#if 0
+				&& stuff.city->get_action(stuff.times[stuff.cdepth]).location == stuff.city->get_action(poss).location
+#endif
+			)
 		{
-			stuff.cdepth--;
+			// skip these for now...
 			continue;
 		}
 
-		if (stuff.city->get_action(poss).value)
+
+		altern a;
+		a.poss = poss;
+		a.time = (stuff.cdepth == 0 ? 0 : stuff.times[stuff.cdepth]) + stuff.city->get_time_to(lastaction, poss);
+
+		if (stuff.city->get_action(poss).value && a.time < stuff.besttime)
 		{
-//			std::cout << "Found a path!" << std::endl;
 			foundapath = true;
-			// we never let ourselves get worse than best time...
-			stuff.besttime = stuff.times[stuff.cdepth];
+			stuff.besttime = a.time;
 			for (int i = 0; i <= stuff.cdepth; i++)
 			{
 				stuff.best[i] = stuff.cinters[i];
 			}
-			stuff.cdepth--;
+			stuff.best[stuff.cdepth+1] = poss;
 			continue;
 		}
 
+		nexts.insert(a);
+	}
+
+	if (nexts.size() == 0)
+	{
+		return foundapath;
+	}
+
+	if (nexts.begin()->time > nexts.rbegin()->time)
+	{
+		auto end = nexts.end();
+		for (auto it = nexts.begin(); it != end; ++it)
+		{
+			const altern& a = (*it);
+			std::cout << a.time << std::endl;
+		}
+
+		std::cerr << "not sorted!" << std::endl;
+		trap();
+	}
+
+	auto end = nexts.end();
+	for (auto it = nexts.begin(); it != end; ++it)
+	{
+		const altern& a = (*it);
+
+		if (a.time >= stuff.besttime)
+		{
+			continue;
+		}
+
+		stuff.cdepth++;
+		stuff.cinters[stuff.cdepth] = a.poss;
+		stuff.times[stuff.cdepth] = a.time;
 		foundapath |= backtrack(stuff);
 		stuff.cdepth--;
 	}

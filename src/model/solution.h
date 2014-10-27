@@ -9,6 +9,7 @@
 #define SOLUTION_H_
 
 #include "model/city.h"
+#include "model/inventory.h"
 
 class Solution
 {
@@ -47,7 +48,7 @@ private:
 	int *lens;
 
 	intarray times;
-//	int3array inventories;
+	InventoryTimeline invs;
 };
 
 

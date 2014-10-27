@@ -7,6 +7,8 @@
 
 #include "model/city.h"
 
+#include "model/landfill.h"
+
 #include <cstdlib>
 #include <cmath>
 #include <sstream>
@@ -65,7 +67,7 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 
 	for (int t = 0; t < num_stagingareas; t++)
 	{
-		Yard y {ndx++};
+		yards.push_back(Yard{ndx++});
 #if ALL_YARD_COMBOS
 		dumpster_size sizes[] = {none, six, nine, twelve, sixteen};
 		operation ops[] = {Store, Unstore};
@@ -80,8 +82,8 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 		dumpster_size sizes[] = {six, nine, twelve, sixteen};
 		for (int i=0;i<4;i++)
 		{
-			donttouch.push_back(Action{y, sizes[i], none, Store});
-			donttouch.push_back(Action{y, none, sizes[i], Unstore});
+			donttouch.push_back(Action{yards.at(t), sizes[i], none, Store});
+			donttouch.push_back(Action{yards.at(t), none, sizes[i], Unstore});
 		}
 #endif
 	}

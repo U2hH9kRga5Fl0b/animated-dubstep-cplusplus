@@ -10,10 +10,11 @@
 
 #include "common.h"
 
-#include "model/landfill.h"
-#include "model/yard.h"
 #include "model/dumpstersize.h"
 #include "model/operation.h"
+
+class Yard;
+class Landfill;
 
 class Action
 {

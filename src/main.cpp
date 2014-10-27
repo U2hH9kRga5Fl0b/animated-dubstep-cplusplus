@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 {
 	srand(5000015);
 
-	City c{1000,20,20,10};
+	City c{20,3,3,3};
 	{
 		std::ofstream os{"city.txt"};
 		os << c << std::endl;

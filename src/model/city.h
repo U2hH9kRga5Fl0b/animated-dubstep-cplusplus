@@ -11,6 +11,7 @@
 #include "model/action.h"
 #include "model/trucktypes.h"
 #include "intarray.h"
+#include "model/yard.h"
 
 #include <vector>
 
@@ -80,7 +81,10 @@ public:
 	Coord *coords;
 	truck_types* trucks;
 
+	std::vector<Yard> yards;
+
 	friend std::ostream& operator<<(std::ostream& out, const City& a);
+
 private:
 	const Action *actions;
 	std::vector<Action> donttouch;

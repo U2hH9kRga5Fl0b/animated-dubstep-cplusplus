@@ -13,7 +13,7 @@
 class Yard
 {
 public:
-	Yard(int loc) : capacity{INT_MAX}, location{loc} {initial[0]=initial[1]=initial[2]=initial[3] = 10; }
+	Yard(int loc) : capacity{INT_MAX}, location{loc} { initial[0]=initial[1]=initial[2]=initial[3] = 10; }
 	~Yard() {}
 
 	int capacity;
