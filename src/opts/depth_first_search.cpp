@@ -144,7 +144,7 @@ bool backtrack(stuff& stuff)
 
 }
 
-bool search_for_path(Solution* solution, int driver, int start, int stop, int maxdepth, insertion& ins)
+bool search_for_path(Solution* solution, int stop, int maxdepth, insertion& ins)
 {
 	if (maxdepth > MAX_SEARCH_DEPTH)
 	{
@@ -152,22 +152,25 @@ bool search_for_path(Solution* solution, int driver, int start, int stop, int ma
 		trap();
 	}
 
-	int start_index = start < 0 ? solution->get_number_of_stops(driver) - 1 : start;
+	if (ins.start == 0)
+	{
+		trap();
+	}
 
 	stuff s;
 	s.already_serviced = new bool[solution->get_city()->num_actions];
 	for (int i = 0; i < solution->get_city()->num_actions; i++)
 	{
-		s.already_serviced[i] = (i < start || i > stop) && solution->already_serviced(i);
+		s.already_serviced[i] = (i < ins.start || i > stop) && solution->already_serviced(i);
 	}
-	s.firstaction = solution->get_action_index(driver, start_index);
+	s.firstaction = solution->get_action_index(ins.driver, ins.start - 1);
 	if (stop < 0)
 	{
 		s.lastaction = -1;
 	}
 	else
 	{
-		s.lastaction = solution->get_action_index(driver, stop);
+		s.lastaction = solution->get_action_index(ins.driver, stop);
 	}
 	s.city=solution->get_city();
 	s.maxdepth = maxdepth;
@@ -180,8 +183,6 @@ bool search_for_path(Solution* solution, int driver, int start, int stop, int ma
 		return false;
 	}
 
-	ins.driver = driver;
-	ins.start = start_index;
 	ins.subpath.clear();
 	for (int i = 0; i < s.bestlen; i++)
 	{

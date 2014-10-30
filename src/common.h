@@ -8,7 +8,8 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#include <iostream>
+#include "logger.h"
+
 #include <iomanip>
 
 void trap();
@@ -25,7 +26,7 @@ do                                                                              
 	int si=(x),mi=(y),bi=(z);                                                              \
 	if (!(si<=mi) || !(mi<bi) || !(bi>si))                                                 \
 	{                                                                                      \
-		std::cerr << "bad indices: " << si << ", " << mi << ", " << bi << std::endl;   \
+		cerr() << "bad indices: " << si << ", " << mi << ", " << bi << std::endl;   \
 		trap();                                                                        \
 	}                                                                                      \
 } while(0)

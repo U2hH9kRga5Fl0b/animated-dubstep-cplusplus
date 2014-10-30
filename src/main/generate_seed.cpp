@@ -12,6 +12,6 @@
 void generate_seed()
 {
 	Solution* sol = get_nearest_seed(city);
-	std::cout << *sol << std::endl;
-	sol->human_readable(std::cout);
+	log() << *sol << std::endl;
+	sol->human_readable(log());
 }

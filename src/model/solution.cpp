@@ -224,7 +224,7 @@ void Solution::ensure_valid() const
 		if (times.at(d, 0) != c->get_start_time(stops.at(d, 0)))
 		{
 			std::cerr << (*this) << std::endl;
-			std::cout << "the first time for driver " << d << " is bad." << std::endl;
+			log() << "the first time for driver " << d << " is bad." << std::endl;
 			trap();
 		}
 
@@ -233,7 +233,7 @@ void Solution::ensure_valid() const
 			if (times.at(d, s) != times.at(d, s-1) + c->get_time_to(stops.at(d, s-1), stops.at(d, s)))
 			{
 				std::cerr << (*this) << std::endl;
-				std::cout << "the " << s << "-th time for driver " << d << " is bad." << std::endl;
+				log() << "the " << s << "-th time for driver " << d << " is bad." << std::endl;
 				trap();
 			}
 		}
@@ -371,7 +371,7 @@ Coord Solution::interpolate_location_at(int driver, int time, int *action) const
 
 void Solution::human_readable(std::ostream& out) const
 {
-	std::cout << "total time: " << sum_all_times() << std::endl;
+	log() << "total time: " << sum_all_times() << std::endl;
 	for (int d = 0; d < get_num_drivers(); d++)
 	{
 		out << "driver: " << (d+1) << std::endl;
@@ -432,7 +432,7 @@ const City* Solution::get_city() const
 
 
 
-void Solution::service(int driver, int stop, int action, bool still_valid)
+void Solution::append(int driver, int stop, int action, bool still_valid)
 {
 	if (action < 0)
 	{
@@ -456,8 +456,7 @@ void Solution::service(int driver, int stop, int action, bool still_valid)
 	lens[driver] = std::max(lens[driver], stop + 1);
 
 	int prev = stop == 0 ? START_ACTION_INDEX : stops.at(driver, stop-1);
-
-	int diff = c->get_time_to(prev, action) - times.at(driver, stop);
+	int diff = (stop==0?0:times.at(driver, stop-1)) + c->get_time_to(prev, action) - times.at(driver, stop);
 	for (int i = stop; i < lens[driver]; i++)
 	{
 		times.at(driver, i) += diff;

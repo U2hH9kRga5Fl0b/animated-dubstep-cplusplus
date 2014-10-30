@@ -12,6 +12,6 @@
 void generate_random()
 {
 	Solution* sol = get_random_solution(city);
-	std::cout << *sol << std::endl;
-	sol->human_readable(std::cout);
+	log() << *sol << std::endl;
+	sol->human_readable(log());
 }

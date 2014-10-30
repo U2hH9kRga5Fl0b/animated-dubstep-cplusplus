@@ -47,7 +47,7 @@ void parse_args(int argc, char **argv)
 		{
 			std::ofstream os{"city.txt"};
 			os << city << std::endl;
-			std::cout << city << std::endl;
+			log() << city << std::endl;
 		}
 	}
 }

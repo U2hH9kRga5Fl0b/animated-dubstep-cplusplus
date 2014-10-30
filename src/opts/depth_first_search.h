@@ -23,19 +23,21 @@ public:
 
 	void apply(Solution* solution)
 	{
-		if (start < solution->get_number_of_stops(driver))
+		int num_stops = solution->get_number_of_stops(driver);
+		if (start < num_stops)
 		{
+			std::cerr << *solution << std::endl;
 			std::cerr << "not implemented!" << std::endl;
 			trap();
 		}
 		int size = subpath.size();
 		for (int i = 0; i < size; i++)
 		{
-			solution->service(driver, start + i, subpath.at(i));
+			solution->append(driver, start + i, subpath.at(i));
 		}
 	}
 };
 
-bool search_for_path(Solution* solution, int driver, int start, int stop, int maxdepth, insertion& ins);
+bool search_for_path(Solution* solution, int end_index, int maxdepth, insertion& ins);
 
 #endif /* DEPTH_FIRST_SEARCH_H_ */

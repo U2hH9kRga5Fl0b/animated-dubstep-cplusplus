@@ -37,7 +37,7 @@ public:
 	void human_readable(std::ostream& out) const;
 
 	// operations...
-	void service(int driver, int stop, int action, bool still_valid=true);
+	void append(int driver, int stop, int action, bool still_valid=true);
 	void cut(int driver, int start, int stop);
 	void paste(int driver, int index, std::vector<int> path);
 	void exchange(int driver1, int begin1, int end1, int driver2, int begin2, int end2);

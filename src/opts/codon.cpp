@@ -241,7 +241,7 @@ void exchange_subpath_search(Solution* solution, int fail_threshold)
 		int idx1;
 		do
 		{
-			idx1 = rand() % idx1;
+			idx1 = rand() % len;
 		} while (idx1 == len-1);
 
 		int idx2 = idx1 + rand() % (len - idx1);

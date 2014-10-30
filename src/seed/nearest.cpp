@@ -23,7 +23,7 @@ Solution* get_nearest_seed(const City* c)
 			action = rand() % c->num_actions;
 			// no inventories or time windows
 		} while (sol->already_serviced(action) || !c->is_start_action(action));
-		sol->service(d, 0, action);
+		sol->append(d, 0, action);
 	}
 
 	bool *canservice = new bool[c->num_trucks];
@@ -37,14 +37,14 @@ Solution* get_nearest_seed(const City* c)
 		canserviceany = false;
 		for (int d = 0; d < c->num_trucks; d++)
 		{
-			insertion ins{d, sol->get_time_for_driver(d)};
+			insertion ins{d, sol->get_number_of_stops(d)};
 
 			if (!canservice[d])
 			{
 				continue;
 			}
 
-			if (search_for_path(sol, d, -1, -1, 5, ins))
+			if (search_for_path(sol, -1, 5, ins))
 			{
 				canserviceany = true;
 				ins.apply(sol);

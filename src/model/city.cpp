@@ -103,7 +103,7 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	{
 		avg_drive_time += durations.at(i,j) = (int)(DIST_SCALE * coords[i].dist(coords[j]));
 	}
-	std::cout << "average drive time: " << (avg_drive_time / (60.0 * num_locations * (num_locations - 1))) << " minutes" << std::endl;
+	log() << "average drive time: " << (avg_drive_time / (60.0 * num_locations * (num_locations - 1))) << " minutes" << std::endl;
 
 	actions = donttouch.data();
 	if (num_actions != (int) donttouch.size())
@@ -136,7 +136,7 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 			avg_num_possibles++;
 		}
 	}
-	std::cout << "average number of possibles actions: " << (avg_num_possibles / num_actions) << std::endl;
+	log() << "average number of possibles actions: " << (avg_num_possibles / num_actions) << std::endl;
 
 	for (int i = 0; i < num_actions; i++)
 	{

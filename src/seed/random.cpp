@@ -19,7 +19,7 @@ Solution* get_random_solution(const City* c)
 			action = rand() % c->num_actions;
 			// no inventories or time windows
 		} while (sol->already_serviced(action) || !c->is_start_action(action));
-		sol->service(d, 0, action);
+		sol->append(d, 0, action);
 	}
 
 	int* tmp = new int[sol->get_city()->num_actions];
@@ -67,7 +67,7 @@ Solution* get_random_solution(const City* c)
 			}
 
 			canserviceany = true;
-			sol->service(d, len, rand() % posslen);
+			sol->append(d, len, rand() % posslen);
 		}
 	}
 
