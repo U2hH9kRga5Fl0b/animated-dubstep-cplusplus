@@ -42,7 +42,7 @@ Action::Action(int loc) :
 	in{op == Pickup ? none : get_random_size()},
 	out{op == Dropoff ? none : get_random_size()},
 	location{loc},
-#if 0
+#if ENFORCE_TIME_WINDOWS
 	begin_time{rand() % 2 ? TIME_IN_A_DAY / 2 : 0},
 	end_time {begin_time + TIME_IN_A_DAY / 2 },
 #else

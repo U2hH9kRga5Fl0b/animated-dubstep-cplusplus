@@ -14,11 +14,11 @@ void take_still_shot(const Solution* solution, int time, Coord *coords, int *act
 	{
 		if (actions == nullptr)
 		{
-			coords[i] = solution->get_location_at(i, time, nullptr);
+			coords[i] = solution->interpolate_location_at(i, time, nullptr);
 		}
 		else
 		{
-			coords[i] = solution->get_location_at(i, time, &actions[i]);
+			coords[i] = solution->interpolate_location_at(i, time, &actions[i]);
 		}
 	}
 }

@@ -112,13 +112,13 @@ namespace
 	void print_sol_to_mat(const Solution* sol, state* istate)
 	{
 		double minx, miny, maxx, maxy;
-		get_bounds(sol->c, minx, maxx, miny, maxy);
+		get_bounds(sol->get_city(), minx, maxx, miny, maxy);
 
 		// std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count()
 
 		for (int d=0;d<sol->get_num_drivers();d++)
 		{
-			int length = sol->get_length(d);
+			int length = sol->get_number_of_stops(d);
 			if (length <= 0)
 			{
 				continue;
@@ -126,7 +126,7 @@ namespace
 			cv::Scalar& color = istate->get_color(d);
 
 			// draw first line
-			Coord& c = sol->c->coords[sol->c->start_location];
+			Coord& c = sol->get_city()->coords[sol->get_city()->start_location];
 			double x = istate->mat.cols * (c.x - minx) / (maxx - minx);
 			double y = istate->mat.rows * (c.y - miny) / (maxy - miny);
 			cv::Point prev((int) x, (int) y);
@@ -135,9 +135,9 @@ namespace
 			// draw middle lines
 			for (int s = 0; s < length; s++)
 			{
-				int loc = sol->c->get_action(sol->get_action(d, s)).location;
-				x = istate->mat.cols * (sol->c->coords[loc].x - minx) / (maxx - minx);
-				y = istate->mat.rows * (sol->c->coords[loc].y - miny) / (maxy - miny);
+				int loc = sol->get_city()->get_action(sol->get_action_index(d, s)).location;
+				x = istate->mat.cols * (sol->get_city()->coords[loc].x - minx) / (maxx - minx);
+				y = istate->mat.rows * (sol->get_city()->coords[loc].y - miny) / (maxy - miny);
 
 				cv::Point next((int) x, (int) y);
 				cv::circle(istate->mat, next, 3, color);
@@ -155,7 +155,7 @@ namespace
 			}
 
 			// draw last line
-			c = sol->c->coords[sol->c->start_location];
+			c = sol->get_city()->coords[sol->get_city()->start_location];
 			x = istate->mat.cols * (c.x - minx) / (maxx - minx);
 			y = istate->mat.rows * (c.y - miny) / (maxy - miny);
 			cv::Point next((int) x, (int) y);
@@ -163,7 +163,7 @@ namespace
 		}
 
 		std::stringstream s;
-		s << "n=" << sol->get_num_serviced() << " t=" << sol->get_time();
+		s << "n=" << sol->get_num_serviced() << " t=" << sol->sum_all_times();
 
 		cv::Scalar invert = istate->get_color(sol->get_num_drivers() + 1);
 		cv::putText(istate->mat, s.str(), cv::Point(0,20), CV_FONT_HERSHEY_PLAIN, 1.0, invert);
@@ -193,7 +193,7 @@ namespace
 	void write_trucks_to_mat(const Solution* sol, const Coord* coords, int *actions, int time, state* istate)
 	{
 		double minx, miny, maxx, maxy;
-		get_bounds(sol->c, minx, maxx, miny, maxy);
+		get_bounds(sol->get_city(), minx, maxx, miny, maxy);
 
 		for (int driver = 0; driver < sol->get_num_drivers(); driver++)
 		{
@@ -214,18 +214,18 @@ namespace
 			}
 			else
 			{
-				operation last_op = sol->c->get_action(actions[driver]).op;
+				operation last_op = sol->get_city()->get_action(actions[driver]).op;
 				if (last_op == Store || last_op == Dropoff)
 				{
 					ss << "N";
 				}
 				else if (last_op == Pickup || last_op == Replace)
 				{
-					ss << "F(" << sol->c->get_action(actions[driver]).out << ")";
+					ss << "F(" << sol->get_city()->get_action(actions[driver]).out << ")";
 				}
 				else
 				{
-					ss << "E(" << sol->c->get_action(actions[driver]).out << ")";
+					ss << "E(" << sol->get_city()->get_action(actions[driver]).out << ")";
 				}
 			}
 			prev.x = prev.x - 20;
@@ -254,7 +254,7 @@ void vizualizer::show(const Solution* sol)
 	state* istate = get_state(internal_state);
 	std::lock_guard<std::mutex> lock{istate->mut};
 	clear_mat(istate);
-	print_city_to_mat(sol->c, istate);
+	print_city_to_mat(sol->get_city(), istate);
 	print_sol_to_mat(sol, istate);
 
 	std::lock_guard<std::mutex> global{graphics_mutex};
@@ -269,7 +269,7 @@ void vizualizer::show(const Solution* sol, int time)
 	state* istate = get_state(internal_state);
 	std::lock_guard<std::mutex> lock{istate->mut};
 	clear_mat(istate);
-	print_city_to_mat(sol->c, istate);
+	print_city_to_mat(sol->get_city(), istate);
 	print_sol_to_mat(sol, istate);
 
 	Coord* coords = new Coord[sol->get_num_drivers()];

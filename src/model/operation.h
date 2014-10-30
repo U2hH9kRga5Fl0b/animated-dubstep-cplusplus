@@ -24,5 +24,4 @@ typedef enum
 
 char operation_to_char(const operation o);
 
-
 #endif /* OPERATION_H_ */

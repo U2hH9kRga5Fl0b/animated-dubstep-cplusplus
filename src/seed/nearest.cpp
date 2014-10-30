@@ -5,7 +5,11 @@
  *      Author: thallock
  */
 
-#include "seed/random.h"
+#include "seed/seed.h"
+
+#include "opts/depth_first_search.h"
+
+bool search_for_path(Solution* solution, int driver, int start, int stop, int maxdepth, insertion& ins);
 
 Solution* get_nearest_seed(const City* c)
 {
@@ -33,11 +37,18 @@ Solution* get_nearest_seed(const City* c)
 		canserviceany = false;
 		for (int d = 0; d < c->num_trucks; d++)
 		{
+			insertion ins{d, sol->get_time_for_driver(d)};
+
 			if (!canservice[d])
 			{
 				continue;
 			}
-			canserviceany |= (canservice[d] = apply_nearest_valuable(sol, d, sol->get_length(d)));
+
+			if (search_for_path(sol, d, -1, -1, 5, ins))
+			{
+				canserviceany = true;
+				ins.apply(sol);
+			}
 		}
 	} while (canserviceany);
 

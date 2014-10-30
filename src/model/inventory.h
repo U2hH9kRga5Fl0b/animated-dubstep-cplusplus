@@ -19,6 +19,7 @@ public:
 	InventoryTimeline(const City* city);
 	~InventoryTimeline();
 
+	void clear(const City* original);
 	void action_performed(int driver, int stop, int time, const Action* action);
 
 	bool in_capacity();

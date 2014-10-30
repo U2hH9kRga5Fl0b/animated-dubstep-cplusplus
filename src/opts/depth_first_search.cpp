@@ -1,15 +1,13 @@
 /*
- * get_inters.cpp
+ * nearest_valuable.cpp
  *
  *  Created on: Oct 25, 2014
  *      Author: thallock
  */
 
-#include "seed/random.h"
+#include "opts/depth_first_search.h"
 
 #include <set>
-
-#include <algorithm>
 
 namespace
 {
@@ -19,13 +17,15 @@ namespace
 typedef struct
 {
 	// global
-	const Solution* sol;
+	bool *already_serviced;
 	const City* city;
-	int a1;
+	int firstaction;
+	int lastaction;
+	int maxdepth;
 
 	// best
-	int *best;
-	int outlen;
+	int best[MAX_SEARCH_DEPTH];
+	int bestlen;
 	int besttime;
 
 	// current
@@ -53,7 +53,7 @@ struct altern
 
 bool backtrack(stuff& stuff)
 {
-	if (stuff.cdepth + 1 >= stuff.outlen)
+	if (stuff.cdepth + 1 >= stuff.maxdepth)
 	{
 		return false;
 	}
@@ -63,7 +63,7 @@ bool backtrack(stuff& stuff)
 
 	std::set<altern> nexts;
 
-	int lastaction = stuff.cdepth == -1 ? stuff.a1 : stuff.cinters[stuff.cdepth];
+	int lastaction = stuff.cdepth == -1 ? stuff.firstaction : stuff.cinters[stuff.cdepth];
 	for (int p = 0; p < stuff.city->possibles.cols(); p++)
 	{
 		int poss = stuff.city->possibles.at(lastaction, p);
@@ -71,16 +71,9 @@ bool backtrack(stuff& stuff)
 		{
 			break;
 		}
-		if (stuff.sol->already_serviced(poss))
+		if (stuff.already_serviced[poss])
 		{
 			continue;
-		}
-		for (int i = 0; i <= stuff.cdepth; i++)
-		{
-			if (stuff.cinters[i] == poss && stuff.city->get_action(stuff.cinters[i]).value)
-			{
-				continue;
-			}
 		}
 
 		if (		stuff.cdepth >= 0 &&
@@ -100,7 +93,9 @@ bool backtrack(stuff& stuff)
 		a.poss = poss;
 		a.time = (stuff.cdepth == 0 ? 0 : stuff.times[stuff.cdepth]) + stuff.city->get_time_to(lastaction, poss);
 
-		if (stuff.city->get_action(poss).value && a.time < stuff.besttime)
+		bool is_destination = stuff.lastaction == -1 ? stuff.city->get_action(poss).value : poss == lastaction;
+
+		if (is_destination && a.time < stuff.besttime)
 		{
 			foundapath = true;
 			stuff.besttime = a.time;
@@ -109,6 +104,7 @@ bool backtrack(stuff& stuff)
 				stuff.best[i] = stuff.cinters[i];
 			}
 			stuff.best[stuff.cdepth+1] = poss;
+			stuff.bestlen = stuff.cdepth + 2;
 			continue;
 		}
 
@@ -118,19 +114,6 @@ bool backtrack(stuff& stuff)
 	if (nexts.size() == 0)
 	{
 		return foundapath;
-	}
-
-	if (nexts.begin()->time > nexts.rbegin()->time)
-	{
-		auto end = nexts.end();
-		for (auto it = nexts.begin(); it != end; ++it)
-		{
-			const altern& a = (*it);
-			std::cout << a.time << std::endl;
-		}
-
-		std::cerr << "not sorted!" << std::endl;
-		trap();
 	}
 
 	auto end = nexts.end();
@@ -143,10 +126,16 @@ bool backtrack(stuff& stuff)
 			continue;
 		}
 
+		bool has_value = stuff.city->get_action(a.poss).value;
+
 		stuff.cdepth++;
 		stuff.cinters[stuff.cdepth] = a.poss;
 		stuff.times[stuff.cdepth] = a.time;
+		if (has_value) stuff.already_serviced[a.poss] = true;
+
 		foundapath |= backtrack(stuff);
+
+		if (has_value) stuff.already_serviced[a.poss] = false;
 		stuff.cdepth--;
 	}
 
@@ -155,32 +144,49 @@ bool backtrack(stuff& stuff)
 
 }
 
-/** Just finds the best time between the two actions **/
-
-int get_best_path(const Solution* solution,
-		int lastaction,
-		int *out, int outlen)
+bool search_for_path(Solution* solution, int driver, int start, int stop, int maxdepth, insertion& ins)
 {
-	if (outlen > MAX_SEARCH_DEPTH)
+	if (maxdepth > MAX_SEARCH_DEPTH)
 	{
 		std::cerr << "This is not supported." << std::endl;
 		trap();
 	}
 
+	int start_index = start < 0 ? solution->get_number_of_stops(driver) - 1 : start;
+
 	stuff s;
-	s.sol = solution;
-	s.city=solution->c;
-	s.a1=lastaction;
-	s.best = out;
-	s.outlen = outlen;
-	s.besttime = INT_MAX;
-	s.cdepth = -1;
-	if (backtrack(s))
+	s.already_serviced = new bool[solution->get_city()->num_actions];
+	for (int i = 0; i < solution->get_city()->num_actions; i++)
 	{
-		return s.besttime;
+		s.already_serviced[i] = (i < start || i > stop) && solution->already_serviced(i);
+	}
+	s.firstaction = solution->get_action_index(driver, start_index);
+	if (stop < 0)
+	{
+		s.lastaction = -1;
 	}
 	else
 	{
-		return -1;
+		s.lastaction = solution->get_action_index(driver, stop);
 	}
+	s.city=solution->get_city();
+	s.maxdepth = maxdepth;
+	s.bestlen = -1;
+	s.besttime = INT_MAX;
+	s.cdepth = -1;
+
+	if (!backtrack(s))
+	{
+		return false;
+	}
+
+	ins.driver = driver;
+	ins.start = start_index;
+	ins.subpath.clear();
+	for (int i = 0; i < s.bestlen; i++)
+	{
+		ins.subpath.push_back(s.best[i]);
+	}
+
+	return true;
 }

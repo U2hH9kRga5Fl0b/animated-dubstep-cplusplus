@@ -26,6 +26,12 @@ public:
 	double x, y;
 };
 
+
+
+#define START_ACTION_INDEX -1534
+#define END_ACTION_INDEX   -1535
+
+
 class City
 {
 public:
@@ -40,9 +46,30 @@ public:
 
 	inline int get_time_to(int from, int to) const
 	{
-		INBOUNDS(0, from, num_actions);
-		INBOUNDS(0, to, num_actions);
-		return durations.at(actions[from].location, actions[to].location) + actions[to].wait_time;
+		int ret_val = 0;
+		int from_loc;
+		int to_loc;
+		if (from == START_ACTION_INDEX)
+		{
+			from_loc = start_location;
+		}
+		else
+		{
+			INBOUNDS(0, from, num_actions);
+			from_loc = actions[from].location;
+		}
+		if (to == END_ACTION_INDEX)
+		{
+			to_loc = start_location;
+		}
+		else
+		{
+			INBOUNDS(0, to, num_actions);
+			to_loc = actions[to].location;
+			ret_val += actions[to].wait_time;
+		}
+		ret_val += durations.at(from_loc, to_loc);
+		return ret_val;
 	}
 
 	inline bool is_start_action(const int ndx) const

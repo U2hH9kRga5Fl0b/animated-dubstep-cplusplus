@@ -17,29 +17,34 @@ public:
 	Solution(const City* c, int starting_length);
 	virtual ~Solution();
 
-	void service(int driver, int stop, int action);
-	int get_action(int driver, int stop) const;
+	int get_action_index(int driver, int stop) const;
+	bool already_serviced(int action) const;
+	const City* get_city() const;
 
 	int get_num_serviced() const;
-	int get_time_for(int driver) const;
-	int get_time() const;
-	bool already_serviced(int action) const;
+	int get_time_for_driver(int driver) const;
+	int sum_all_times() const;
+	int get_maximum_time() const;
 
 	inline int get_num_drivers() const { return stops.rows(); }
-	inline int get_length(int driver) const { return lens[driver]; }
+	inline int get_number_of_stops(int driver) const { return lens[driver]; }
+	inline int get_current_dimension() {return stops.cols(); }
 
-	Coord get_location_at(int driver, int time, int *action) const;
+	Coord interpolate_location_at(int driver, int time, int *action) const;
 
 	void ensure_valid() const;
-
 	friend std::ostream& operator<<(std::ostream& out, const Solution& sol);
-
 	void human_readable(std::ostream& out) const;
-	int get_last_time() const;
 
-	const City* c;
+	// operations...
+	void service(int driver, int stop, int action, bool still_valid=true);
+	void cut(int driver, int start, int stop);
+	void paste(int driver, int index, std::vector<int> path);
+	void exchange(int driver1, int begin1, int end1, int driver2, int begin2, int end2);
+
+	void refresh();
 private:
-
+	const City* c;
 	intarray stops;
 
 	int *drivers;

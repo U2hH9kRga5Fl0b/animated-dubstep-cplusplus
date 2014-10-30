@@ -235,6 +235,14 @@ InventoryTimeline::~InventoryTimeline()
 	delete tl;
 }
 
+void InventoryTimeline::clear(const City* city)
+{
+	auto tl = (std::map<int, inventory*>*) timeline;
+	std::for_each(tl->begin(), tl->end(), [](const std::pair<int, inventory*>& p) { delete p.second; });
+	tl->clear();
+	tl->insert(std::pair<int, inventory*> { -1, new inventory{city} });
+}
+
 void InventoryTimeline::action_performed(int driver, int stop, int time, const Action* action)
 {
 	if (action->op != Unstore && action->op != Store)
@@ -261,8 +269,6 @@ bool InventoryTimeline::in_capacity()
 		return it.second->in_capacity();
 	});
 }
-
-
 
 std::ostream& operator<<(std::ostream& out, const InventoryTimeline& line)
 {

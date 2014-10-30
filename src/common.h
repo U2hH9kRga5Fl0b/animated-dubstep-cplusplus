@@ -38,4 +38,19 @@ do                                                                              
 
 
 
+
+
+
+// enforced constraints
+
+#define ENFORCE_OPERATION_ORDERS 1
+#define ENFORCE_TIME_WINDOWS     0
+#define ENFORCE_START_STATE      1
+#define ENFORCE_STOP_STATE       0
+#define ENFORCE_INVENTORIES      0
+#define ENFORCE_NO_REPEATED_STOP 1
+#define ENFORCE_TRUCK_TYPES      0
+
+
+
 #endif /* COMMON_H_ */

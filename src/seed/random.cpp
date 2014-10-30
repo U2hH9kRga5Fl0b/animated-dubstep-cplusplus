@@ -5,11 +5,10 @@
  *      Author: thallock
  */
 
-#include "seed/random.h"
+#include "seed/seed.h"
 
 Solution* get_random_solution(const City* c)
 {
-	int len = c->num_actions;
 	Solution* sol = new Solution { c, c->num_actions };
 
 	for (int d = 0; d < c->num_trucks; d++)
@@ -23,42 +22,57 @@ Solution* get_random_solution(const City* c)
 		sol->service(d, 0, action);
 	}
 
-	bool canserviceall = true;
-
-	for (int s = 1; s < len && canserviceall; s++)
+	int* tmp = new int[sol->get_city()->num_actions];
+	bool* canservice = new bool[sol->get_city()->num_actions];
+	for (int i = 0; i < sol->get_city()->num_actions; i++)
 	{
-		for (int d = 0; d < c->num_trucks && canserviceall; d++)
+		canservice[i] = true;
+	}
+
+	bool canserviceany = true;
+	while(canserviceany)
+	{
+		canserviceany = false;
+		for (int d = 0; d < c->num_trucks; d++)
 		{
-			int next = -1;
+			if (!canservice[d])
+			{
+				continue;
+			}
+
+			int posslen = 0;
+			int len = sol->get_number_of_stops(d);
 
 			for (int p = 0; p < c->num_actions; p++)
 			{
-				// ok, not in order...
-				int alt = c->possibles.at(sol->get_action(d, s-1), p);
+				int alt = c->possibles.at(sol->get_action_index(d, len-1), p);
 				if (alt < 0)
 				{
 					break;
 				}
 
-				// no inventories or time windows
 				if (sol->already_serviced(alt))
 				{
 					continue;
 				}
 
-				next = alt;
+				tmp[posslen++] = alt;
 				break;
 			}
 
-			if (next < 0)
+			if (posslen <= 0)
 			{
-				canserviceall = false;
-				break;
+				canservice[d] = false;
+				continue;
 			}
 
-			sol->service(d, s, next);
+			canserviceany = true;
+			sol->service(d, len, rand() % posslen);
 		}
 	}
+
+	delete[] tmp;
+	delete[] canservice;
 
 	return sol;
 }
