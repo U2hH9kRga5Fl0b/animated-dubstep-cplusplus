@@ -12,16 +12,15 @@
 
 namespace
 {
-
 	std::ofstream outfile{"output/log.txt"};
 }
 
 std::ostream& log()
 {
-	return outfile;
+	return std::cout;
 }
 
 std::ostream& err()
 {
-	return outfile;
+	return std::cerr;
 }

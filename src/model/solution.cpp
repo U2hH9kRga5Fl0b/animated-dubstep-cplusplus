@@ -244,8 +244,15 @@ std::ostream& operator<<(std::ostream& out, const Solution& sol)
 {
 	if (DEBUG)
 	{
+		out << "indices:   ";
+		for (int i = 0; i < sol.stops.cols(); i++)
+		{
+			out << std::setw(3) << i << ' ';
+		}
+		out << std::endl;
 		for (int d = 0; d < sol.get_num_drivers(); d++)
 		{
+
 			out << std::setw(2) << d << " len=" << std::setw(3) << sol.lens[d] << ':';
 			for (int s = 0; s < sol.stops.cols(); s++)
 			{

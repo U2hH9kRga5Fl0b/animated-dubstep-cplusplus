@@ -13,5 +13,6 @@
 void solve()
 {
 	Solution* sol = get_nearest_seed(city);
+	log() << *sol << std::endl;
 	exchange_subpath_search(sol, 100);
 }

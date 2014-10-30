@@ -60,6 +60,43 @@ public:
 	}
 	~stop_state(){}
 
+	std::ostream& operator<<(std::ostream& out, const stop_state& state)
+	{
+		switch(container_state)
+		{
+		case -1:
+			out << "none"
+			break;
+		case 0:
+			out << "empty"
+			break;
+		case 1:
+			out << "full"
+			break;
+		}
+		out << "(";
+		switch(container_state)
+		{
+		case 0:
+			out << "0";
+			break;
+		case 6:
+			out << "6";
+			break;
+		case 9:
+			out << "9";
+			break;
+		case 12:
+			out << "12";
+			break;
+		case 16:
+			out << "16";
+			break;
+		}
+		out << ")";
+		return out;
+	}
+
 	bool operator==(const stop_state& other)
 	{
 		return container_state == other.container_state && size == other.size;
@@ -106,6 +143,7 @@ public:
 
 void find_compatible_states(Solution* solution, stop_state state, std::set<int> *compats, search_method m)
 {
+	log() << "possibles: " << std::endl;
 	int num_drivers = solution->get_num_drivers();
 	for (int d = 0; d < num_drivers; d++)
 	{
@@ -115,6 +153,7 @@ void find_compatible_states(Solution* solution, stop_state state, std::set<int> 
 			if (stop_state{solution, d, s} == state)
 			{
 				compats[d].insert(s);
+				log() << d << ", " << s << std::endl;
 			}
 		}
 	}
@@ -147,8 +186,11 @@ bool find_best_codon(Solution *solution, const codon& c, search_method m)
 	std::set<int>* startstops = new std::set<int>[num_drivers];
 	std::set<int>* stopstops = new std::set<int>[num_drivers];
 
+	log() << "first considering swapping " << c.driver << ", " << c.begin << "," <<	c.end;
+
 	find_compatible_states(solution, c.start, startstops, m);
 	find_compatible_states(solution, c.stop,  stopstops,  m);
+
 
 	bool found_improvement = false;
 	codon bestcodon;
