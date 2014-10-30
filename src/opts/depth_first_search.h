@@ -26,8 +26,8 @@ public:
 		int num_stops = solution->get_number_of_stops(driver);
 		if (start < num_stops)
 		{
-			std::cerr << *solution << std::endl;
-			std::cerr << "not implemented!" << std::endl;
+			err() << *solution << std::endl;
+			err() << "not implemented!" << std::endl;
 			trap();
 		}
 		int size = subpath.size();

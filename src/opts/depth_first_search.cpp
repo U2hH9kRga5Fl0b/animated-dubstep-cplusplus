@@ -148,7 +148,7 @@ bool search_for_path(Solution* solution, int stop, int maxdepth, insertion& ins)
 {
 	if (maxdepth > MAX_SEARCH_DEPTH)
 	{
-		std::cerr << "This is not supported." << std::endl;
+		err() << "This is not supported." << std::endl;
 		trap();
 	}
 

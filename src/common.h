@@ -26,7 +26,7 @@ do                                                                              
 	int si=(x),mi=(y),bi=(z);                                                              \
 	if (!(si<=mi) || !(mi<bi) || !(bi>si))                                                 \
 	{                                                                                      \
-		cerr() << "bad indices: " << si << ", " << mi << ", " << bi << std::endl;   \
+		cerr() << "bad indices: " << si << ", " << mi << ", " << bi << std::endl;      \
 		trap();                                                                        \
 	}                                                                                      \
 } while(0)
