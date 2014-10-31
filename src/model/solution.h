@@ -17,6 +17,9 @@ public:
 	Solution(const City* c, int starting_length);
 	virtual ~Solution();
 
+	Solution& operator=(const Solution& other);
+	Solution(const Solution& other);
+
 	int get_action_index(int driver, int stop) const;
 	bool already_serviced(int action) const;
 	const City* get_city() const;

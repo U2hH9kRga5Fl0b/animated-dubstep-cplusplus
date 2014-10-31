@@ -30,6 +30,12 @@ public:
 	stop_state() : container_state{-1}, size{255} {}
 	stop_state(const Solution* sol, int driver, int stop)
 	{
+		if (stop < 0)
+		{
+			container_state = -1;
+			size = 0;
+			return;
+		}
 		int idx = sol->get_action_index(driver, stop);
 		if (idx < 0)
 		{
@@ -119,7 +125,7 @@ public:
 			driver{dri}, begin{b}, end{e}
 	{
 		accessible[0] = accessible[1] = accessible[2] = true;
-		for (int i = begin; i <= end; i++)
+		for (int i = begin+1; i <= end; i++)
 		{
 			int stop = sol->get_action_index(driver, i);
 			const Action& ac = sol->get_city()->get_action(stop);
@@ -163,21 +169,33 @@ void find_compatible_states(Solution* solution, stop_state state, std::set<int> 
 
 int get_time_delta(const Solution* sol, const codon& c1, const codon& c2)
 {
-	int prevc1 = c1.begin > 0 ? sol->get_action_index(c1.driver, c1.begin-1) : START_ACTION_INDEX;
-	int firsc1 = sol->get_action_index(c1.driver, c1.begin);
+	int prevc1 = c1.begin >= 0 ? sol->get_action_index(c1.driver, c1.begin) : START_ACTION_INDEX;
+	int firsc1 = sol->get_action_index(c1.driver, c1.begin+1);
 	int lastc1 = sol->get_action_index(c1.driver, c1.end);
-	int nextc1 = c1.end < sol->get_number_of_stops(c1.driver) ? sol->get_action_index(c1.driver, c1.begin+1) : END_ACTION_INDEX;
+	int nextc1 = c1.end+1 < sol->get_number_of_stops(c1.driver) ? sol->get_action_index(c1.driver, c1.end+1) : END_ACTION_INDEX;
 
-	int prevc2 = c2.begin > 0 ? sol->get_action_index(c2.driver, c2.begin-1) : START_ACTION_INDEX;
-	int firsc2 = sol->get_action_index(c2.driver, c2.begin);
+	int prevc2 = c2.begin >= 0 ? sol->get_action_index(c2.driver, c2.begin) : START_ACTION_INDEX;
+	int firsc2 = sol->get_action_index(c2.driver, c2.begin+1);
 	int lastc2 = sol->get_action_index(c2.driver, c2.end);
-	int nextc2 = c2.end < sol->get_number_of_stops(c2.driver) ? sol->get_action_index(c2.driver, c2.begin+1) : END_ACTION_INDEX;
+	int nextc2 = c2.end+1 < sol->get_number_of_stops(c2.driver) ? sol->get_action_index(c2.driver, c2.end+1) : END_ACTION_INDEX;
+
+	log() << prevc1 << ", ";
+	log() << firsc1 << ", ";
+	log() << lastc1 << ", ";
+	log() << nextc1 << "\n";
+
+	log() << prevc2 << ", ";
+	log() << firsc2 << ", ";
+	log() << lastc2 << ", ";
+	log() << nextc2 << std::endl;
 
 	const City* city = sol->get_city();
 	int oldcost = city->get_time_to(prevc1, firsc1) + city->get_time_to(lastc1, nextc1) + city->get_time_to(prevc2, firsc2) + city->get_time_to(lastc2, nextc2);
+	log() << "old costs: " << city->get_time_to(prevc1, firsc1) << "," << city->get_time_to(lastc1, nextc1) << "," << city->get_time_to(prevc2, firsc2) << "," << city->get_time_to(lastc2, nextc2) << std::endl;
 	int newcost = city->get_time_to(prevc1, firsc2) + city->get_time_to(lastc2, nextc1) + city->get_time_to(prevc2, firsc1) + city->get_time_to(lastc1, nextc2);
+	log() << "new costs: " << city->get_time_to(prevc1, firsc2) << "," << city->get_time_to(lastc2, nextc1) << "," << city->get_time_to(prevc2, firsc1) << "," << city->get_time_to(lastc1, nextc2) << std::endl;
 
-	return oldcost - newcost;
+	return newcost - oldcost;
 }
 
 
@@ -220,6 +238,9 @@ bool find_best_codon(Solution *solution, const codon& c, search_method m)
 			{
 				int e = (*secondit);
 
+
+				// should check if the paths are equal
+
 				if (e == b)
 				{
 					continue;
@@ -243,6 +264,32 @@ bool find_best_codon(Solution *solution, const codon& c, search_method m)
 #endif
 
 				int improvement = get_time_delta(solution, c, alternative);
+
+				if (DEBUG)
+				{
+					Solution other {*solution};
+					int old = other.sum_all_times();
+					other.exchange(c.driver, c.begin + 1, c.end, alternative.driver, alternative.begin + 1, alternative.end);
+
+					int n=other.sum_all_times();
+					int ca=old + improvement;
+
+					if (n != ca)
+					{
+
+						err() << "actual: " << n - old << std::endl;
+						err() << "calculated: " << improvement << std::endl;
+
+						err() << n << ", " << ca << std::endl;
+						err() << "mis-calculated improvement." << std::endl;
+						err() << "old=" << old << std::endl;
+						err() << "improvement=" << improvement << std::endl;
+						err() << "new=" << other.sum_all_times() << std::endl;
+//						solution->exchange(c.driver, c.begin + 1, c.end, alternative.driver, alternative.begin + 1, alternative.end);
+						trap();
+					}
+				}
+
 				if (improvement >= best_improvement)
 				{
 					continue;
@@ -261,15 +308,7 @@ bool find_best_codon(Solution *solution, const codon& c, search_method m)
 
 	if (found_improvement)
 	{
-		old = solution->sum_all_times();
-
 		solution->exchange(c.driver, c.begin+1, c.end, bestcodon.driver, bestcodon.begin+1, bestcodon.end);
-
-		if (DEBUG && solution->sum_all_times() != old + best_improvement)
-		{
-			err() << "miscalculated improvement." << std::endl;
-			trap();
-		}
 	}
 
 	return found_improvement;
@@ -294,12 +333,7 @@ void exchange_subpath_search(Solution* solution, int fail_threshold)
 			len = solution->get_number_of_stops(driver);
 		} while(len == 0);
 
-		int idx1;
-		do
-		{
-			idx1 = rand() % len;
-		} while (idx1 == len-1);
-
+		int idx1 = -1 + (rand() % len);
 		int idx2 = idx1 + 1 + rand() % (len-1 - idx1);
 
 		if (find_best_codon(solution, codon{solution, driver, idx1, idx2}, LINEAR))

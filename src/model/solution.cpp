@@ -33,7 +33,30 @@ Solution::Solution(const City* c_, int starting_length) :
 	ensure_valid();
 }
 
+Solution::Solution(const Solution& other) :
+		Solution(other.c, other.stops.cols())
+{
+	(*this) = other;
+}
+Solution& Solution::operator =(const Solution& other)
+{
+	if (other.c != c)
+	{
+		err() << "can't make this assignment." << std::endl;
+		trap();
+	}
 
+	for (int d = 0; d < other.stops.rows(); d++)
+	{
+		for (int s = 0; s < other.lens[d]; s++)
+		{
+			stops.at(d, s) = other.stops.at(d, s);
+		}
+	}
+
+	refresh();
+	return (*this);
+}
 
 Solution::~Solution()
 {
@@ -74,7 +97,9 @@ int Solution::get_time_for_driver(int driver) const
 		return 0;
 	}
 	int la = stops.at(driver, lens[driver]-1);
-	return times.at(driver, lens[driver]-1) + c->durations.at(c->get_action(la).location, c->start_location);
+	int lat = times.at(driver, lens[driver]-1);
+	int time_to_fin = c->durations.at(c->get_action(la).location, c->start_location);
+	return lat + time_to_fin;
 }
 
 int Solution::sum_all_times() const
@@ -285,6 +310,18 @@ std::ostream& operator<<(std::ostream& out, const Solution& sol)
 
 		out << "inventories:" << std::endl;
 		out << sol.invs << std::endl;
+
+		for (int i = 0; i < sol.times.rows(); i++)
+		{
+			out << std::setw(5) << sol.get_time_for_driver(i) << ": ";
+			out << std::setw(5) << sol.c->get_time_to(START_ACTION_INDEX, sol.stops.at(i, 0));
+			for (int j = 0; j < sol.lens[i]-1; j++)
+			{
+				out << std::setw(5) << sol.c->get_time_to(sol.stops.at(i,j), sol.stops.at(i, j+1)) << " ";
+			}
+			out << std::setw(5) << sol.c->get_time_to(sol.stops.at(i,sol.lens[i]-1), END_ACTION_INDEX);
+			out << std::endl;
+		}
 	}
 	else
 	{
@@ -299,6 +336,7 @@ std::ostream& operator<<(std::ostream& out, const Solution& sol)
 		}
 		out << std::endl;
 	}
+	out << "====================================================" << std::endl;
 
 	return out;
 }
@@ -497,13 +535,39 @@ void Solution::exchange(int driver1, int begin1, int end1,
 	INBOUNDS(-1, begin2, end2+1);
 	INBOUNDS(begin2, end2, lens[driver2]);
 
-	log() << driver1 << ", " << begin1 << ", " << end1 << ", " << driver2 << ", " << begin2 << ", " << end2 << std::endl;
-
-
-	log() << "before exchanging:\n" << *this << std::endl;
+//	log() << driver1 << ", " << begin1 << ", " << end1 << ", " << driver2 << ", " << begin2 << ", " << end2 << std::endl;
 
 	int len1 = 1 + end1 - begin1;
 	int len2 = 1 + end2 - begin2;
+
+	if (driver1 == driver2 && len1 != len2)
+	{
+		if (begin1 > begin2)
+		{
+			int tmp = begin1;
+			begin1 = begin2;
+			begin2 = tmp;
+
+			tmp = end1;
+			end1 = end2;
+			end2 = tmp;
+		}
+
+		int len = end2 - begin1 + 1;
+		int *t = new int[len];
+		for (int i = 0; i < len; i++)
+			t[i] = stops.at(driver1, begin1 + i);
+		int ndx = begin1;
+		for (int i = 0; i < end2 - begin2 + 1; i++)
+			stops.at(driver1, ndx++) = t[begin2 - begin1 + i];
+		for (int i = end1+1; i < begin2; i++)
+			stops.at(driver1, ndx++) = t[i];
+		for (int i = 0; i <= end1; i++)
+			stops.at(driver1, ndx++) = t[i];
+		delete t;
+		refresh();
+		return;
+	}
 
 	if (len1 < len2)
 	{
@@ -513,11 +577,14 @@ void Solution::exchange(int driver1, int begin1, int end1,
 
 		tmp = begin1;
 		begin1 = begin2;
-		begin2 = begin1;
+		begin2 = tmp;
 
 		tmp = end1;
 		end1 = end2;
 		end2 = tmp;
+
+		len1 = 1 + end1 - begin1;
+		len2 = 1 + end2 - begin2;
 	}
 
 	for (int i = 0; i < len2; i++)
@@ -530,36 +597,27 @@ void Solution::exchange(int driver1, int begin1, int end1,
 	}
 
 	int diff = len1 - len2;
-	// make room
-	for (int i = lens[driver2]-1; i >= begin2 - diff + 1; i--)
+	if (diff == 0)
 	{
-		stops.at(driver2, i + diff) = stops.at(driver2, i);
-	}
-	// fill in
-	for (int i=0; i<diff; i++)
-	{
-		stops.at(driver2, begin2 + len2 + i) = stops.at(driver1, begin1 + len2 + i);
-	}
-	int rest = lens[driver1] - end1;
-	// cut out
-	for (int i=0; i<rest; i++)
-	{
-		stops.at(driver1, begin1 + len2 + i) = stops.at(driver1, end1 + i);
+		refresh();
+		return;
 	}
 
-	for(int i=lens[driver1] - diff;i<stops.cols();i++)
+	for (int i = lens[driver2] - 1 + diff; i >= begin2 + len2 + diff; i--)
+		stops.at(driver2, i) = stops.at(driver2, i - diff);
+	for (int i = 0; i < diff; i++)
+		stops.at(driver2, begin2 + len2 + i) = stops.at(driver1, begin1 + len2 + i);
+	for (int i = begin1 + len2; i < lens[driver1] - diff; i++)
+		stops.at(driver1, i) = stops.at(driver1, i + diff);
+
+	for (int i = lens[driver1] - diff; i < stops.cols(); i++)
 	{
 		if (stops.at(driver1, i) < 0)
-		{
 			break;
-		}
 		stops.at(driver1, i) = -1;
 	}
-	log() << "after exchanging:\n" << *this << std::endl;
 
 	refresh();
-
-
 }
 
 void Solution::refresh()
@@ -581,6 +639,16 @@ void Solution::refresh()
 			if (action < 0)
 			{
 				lens[d] = s;
+
+				for (int i = s; i < stops.cols(); i++)
+				{
+					if (times.at(d, i) <= 0)
+					{
+						break;
+					}
+					times.at(d, i) = 0;
+				}
+
 				break;
 			}
 			if (s == 0)
