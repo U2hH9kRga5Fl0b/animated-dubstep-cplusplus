@@ -177,12 +177,12 @@ void Solution::ensure_valid() const
 			}
 			else
 			{
-//				if (stop >= 0)
-//				{
-//					std::cerr << (*this) << std::endl;
-//					std::cerr << "there should not be a stop this late in the solution." << std::endl;
-//					trap();
-//				}
+				if (stop >= 0)
+				{
+					std::cerr << (*this) << std::endl;
+					std::cerr << "there should not be a stop this late in the solution." << std::endl;
+					trap();
+				}
 			}
 		}
 	}
@@ -492,13 +492,18 @@ void Solution::exchange(int driver1, int begin1, int end1,
 {
 	INBOUNDS(0, driver1, get_num_drivers());
 	INBOUNDS(0, driver2, get_num_drivers());
-	INBOUNDS(0, begin1, end1);
+	INBOUNDS(-1, begin1, end1+1);
 	INBOUNDS(begin1, end1, lens[driver1]);
-	INBOUNDS(0, begin2, end1);
+	INBOUNDS(-1, begin2, end2+1);
 	INBOUNDS(begin2, end2, lens[driver2]);
 
-	int len1 = end1 - begin1;
-	int len2 = end2 - begin2;
+	log() << driver1 << ", " << begin1 << ", " << end1 << ", " << driver2 << ", " << begin2 << ", " << end2 << std::endl;
+
+
+	log() << "before exchanging:\n" << *this << std::endl;
+
+	int len1 = 1 + end1 - begin1;
+	int len2 = 1 + end2 - begin2;
 
 	if (len1 < len2)
 	{
@@ -515,7 +520,7 @@ void Solution::exchange(int driver1, int begin1, int end1,
 		end2 = tmp;
 	}
 
-	for (int i = 0; i <= len2; i++)
+	for (int i = 0; i < len2; i++)
 	{
 		int s1 = get_action_index(driver1, begin1 + i);
 		int s2 = get_action_index(driver2, begin2 + i);
@@ -526,9 +531,9 @@ void Solution::exchange(int driver1, int begin1, int end1,
 
 	int diff = len1 - len2;
 	// make room
-	for (int i=0; i<diff; i++)
+	for (int i = lens[driver2]-1; i >= begin2 - diff + 1; i--)
 	{
-		stops.at(driver2, begin2 + len2) = stops.at(driver2, begin2 + len1);
+		stops.at(driver2, i + diff) = stops.at(driver2, i);
 	}
 	// fill in
 	for (int i=0; i<diff; i++)
@@ -541,9 +546,20 @@ void Solution::exchange(int driver1, int begin1, int end1,
 	{
 		stops.at(driver1, begin1 + len2 + i) = stops.at(driver1, end1 + i);
 	}
-	stops.at(driver1, rest - diff) = -1;
+
+	for(int i=lens[driver1] - diff;i<stops.cols();i++)
+	{
+		if (stops.at(driver1, i) < 0)
+		{
+			break;
+		}
+		stops.at(driver1, i) = -1;
+	}
+	log() << "after exchanging:\n" << *this << std::endl;
 
 	refresh();
+
+
 }
 
 void Solution::refresh()
@@ -556,10 +572,10 @@ void Solution::refresh()
 
 	invs.clear(c);
 
-	int num_drivers=0;
+	int num_drivers = stops.rows();
 	for (int d = 0; d < num_drivers; d++)
 	{
-		for (int s = 0; s < stops.rows(); s++)
+		for (int s = 0; s < stops.cols(); s++)
 		{
 			int action = stops.at(d, s);
 			if (action < 0)
@@ -575,8 +591,11 @@ void Solution::refresh()
 			{
 				times.at(d, s) = times.at(d, s-1) + c->get_time_to(stops.at(d, s-1), action);
 			}
-			drivers[action] = d;
-			stop_numbers[action] = s;
+			if (c->get_action(action).value)
+			{
+				drivers[action] = d;
+				stop_numbers[action] = s;
+			}
 			invs.action_performed(d, s, times.at(d, s), &c->get_action(action));
 		}
 	}

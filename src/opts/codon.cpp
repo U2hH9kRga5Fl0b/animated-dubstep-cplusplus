@@ -60,22 +60,22 @@ public:
 	}
 	~stop_state(){}
 
-	std::ostream& operator<<(std::ostream& out, const stop_state& state)
+	friend std::ostream& operator<<(std::ostream& out, const stop_state& state)
 	{
-		switch(container_state)
+		switch(state.container_state)
 		{
 		case -1:
-			out << "none"
+			out << "none";
 			break;
 		case 0:
-			out << "empty"
+			out << "empty";
 			break;
 		case 1:
-			out << "full"
+			out << "full";
 			break;
 		}
 		out << "(";
-		switch(container_state)
+		switch(state.size)
 		{
 		case 0:
 			out << "0";
@@ -92,6 +92,8 @@ public:
 		case 16:
 			out << "16";
 			break;
+		default:
+			trap();
 		}
 		out << ")";
 		return out;
@@ -184,9 +186,10 @@ bool find_best_codon(Solution *solution, const codon& c, search_method m)
 	int num_drivers = solution->get_num_drivers();
 
 	std::set<int>* startstops = new std::set<int>[num_drivers];
-	std::set<int>* stopstops = new std::set<int>[num_drivers];
+	std::set<int>* stopstops  = new std::set<int>[num_drivers];
 
-	log() << "first considering swapping " << c.driver << ", " << c.begin << "," <<	c.end;
+	log() << "first considering swapping " << c.driver << ", " << c.begin << "," <<	c.end << std::endl;
+	log() << "this goes from " << c.start << " to " << c.stop << std::endl;
 
 	find_compatible_states(solution, c.start, startstops, m);
 	find_compatible_states(solution, c.stop,  stopstops,  m);
@@ -215,10 +218,19 @@ bool find_best_codon(Solution *solution, const codon& c, search_method m)
 				continue;
 			}
 
+			log() << "size of end points is " << stopstops[driver].size() << std::endl;
 			auto secondend = stopstops[driver].end();
-			for (auto secondit = stopstops->lower_bound(b); secondit != secondend; ++secondit)
+			for (auto secondit = stopstops[driver].lower_bound(b); secondit != secondend; ++secondit)
 			{
-				int e = (*secondend);
+				int e = (*secondit);
+
+				log() << "considering replacing that with d=" << driver << ", " << b << ", " << e << "." << std::endl;
+
+				if (e == b)
+				{
+					continue;
+				}
+
 				if (driver == c.driver && c.begin < e && c.end > e)
 				{
 					continue;
@@ -255,7 +267,8 @@ bool find_best_codon(Solution *solution, const codon& c, search_method m)
 
 	if (found_improvement)
 	{
-		solution->exchange(c.driver, c.begin, c.end, bestcodon.driver, bestcodon.begin, bestcodon.end);
+		solution->exchange(c.driver, c.begin+1, c.end,
+				bestcodon.driver, bestcodon.begin+1, bestcodon.end);
 	}
 
 	return found_improvement;
@@ -286,7 +299,7 @@ void exchange_subpath_search(Solution* solution, int fail_threshold)
 			idx1 = rand() % len;
 		} while (idx1 == len-1);
 
-		int idx2 = idx1 + rand() % (len - idx1);
+		int idx2 = idx1 + 1 + rand() % (len-1 - idx1);
 
 		if (find_best_codon(solution, codon{solution, driver, idx1, idx2}, LINEAR))
 		{
