@@ -188,9 +188,6 @@ bool find_best_codon(Solution *solution, const codon& c, search_method m)
 	std::set<int>* startstops = new std::set<int>[num_drivers];
 	std::set<int>* stopstops  = new std::set<int>[num_drivers];
 
-	log() << "first considering swapping " << c.driver << ", " << c.begin << "," <<	c.end << std::endl;
-	log() << "this goes from " << c.start << " to " << c.stop << std::endl;
-
 	find_compatible_states(solution, c.start, startstops, m);
 	find_compatible_states(solution, c.stop,  stopstops,  m);
 
@@ -218,13 +215,10 @@ bool find_best_codon(Solution *solution, const codon& c, search_method m)
 				continue;
 			}
 
-			log() << "size of end points is " << stopstops[driver].size() << std::endl;
 			auto secondend = stopstops[driver].end();
 			for (auto secondit = stopstops[driver].lower_bound(b); secondit != secondend; ++secondit)
 			{
 				int e = (*secondit);
-
-				log() << "considering replacing that with d=" << driver << ", " << b << ", " << e << "." << std::endl;
 
 				if (e == b)
 				{
@@ -267,8 +261,15 @@ bool find_best_codon(Solution *solution, const codon& c, search_method m)
 
 	if (found_improvement)
 	{
-		solution->exchange(c.driver, c.begin+1, c.end,
-				bestcodon.driver, bestcodon.begin+1, bestcodon.end);
+		old = solution->sum_all_times();
+
+		solution->exchange(c.driver, c.begin+1, c.end, bestcodon.driver, bestcodon.begin+1, bestcodon.end);
+
+		if (DEBUG && solution->sum_all_times() != old + best_improvement)
+		{
+			err() << "miscalculated improvement." << std::endl;
+			trap();
+		}
 	}
 
 	return found_improvement;
