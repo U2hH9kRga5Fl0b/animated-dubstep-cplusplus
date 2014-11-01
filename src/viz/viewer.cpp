@@ -103,3 +103,13 @@ void Viewer::snapshot(const std::string& name, const City* c, const std::string&
 
 	trap();
 }
+
+void Viewer::status(const std::string& status)
+{
+}
+
+#include <opencv/highgui.h>
+void Viewer::pause(int length)
+{
+	cv::waitKey(0);
+}

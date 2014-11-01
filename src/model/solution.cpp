@@ -568,6 +568,8 @@ void Solution::exchange(int driver1, int begin1, int end1,
 			stops.at(driver1, ndx++) = t[i];
 		delete[] t;
 		refresh();
+
+
 		return;
 	}
 

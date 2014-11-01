@@ -15,7 +15,7 @@
 #define default_width  1000
 #define default_height 1000
 #endif
-#define image_update_time 0
+#define image_update_time 500
 #define SPACER
 
 #include <opencv/highgui.h>
@@ -82,6 +82,15 @@ namespace
 		{
 			cvNamedWindow(name.c_str(), CV_WINDOW_AUTOSIZE);
 			cvMoveWindow(name.c_str(), 100,100);
+
+			colors.push_back(cv::Scalar { 0, 0, 0 });
+			colors.push_back(cv::Scalar { 0, 0, 0 });
+			colors.push_back(cv::Scalar { 0, 0, 0 });
+			colors.push_back(cv::Scalar { 0, 0, 0 });
+			colors.push_back(cv::Scalar { 0, 0, 0 });
+			colors.push_back(cv::Scalar { 0, 0, 0 });
+			colors.push_back(cv::Scalar { 0, 0, 0 });
+			colors.push_back(cv::Scalar { 0, 0, 0 });
 		}
 		~state() {}
 
@@ -139,7 +148,7 @@ namespace
 #if USE_BACKGROUND_IMAGE
 		istate->mat = cv::imread(BACKGROUND_IMAGE, CV_LOAD_IMAGE_COLOR);
 #else
-		istate->mat = cv::Scalar(0, 0, 0);
+		istate->mat = cv::Scalar(255, 255, 255);
 #endif
 	}
 

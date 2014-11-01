@@ -16,4 +16,5 @@ void solve()
 //	log() << *sol << std::endl;
 	viewer.show("seed", sol);
 	exchange_subpath_search(sol, 100);
+	viewer.pause();
 }

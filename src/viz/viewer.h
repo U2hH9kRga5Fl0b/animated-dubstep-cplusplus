@@ -26,6 +26,7 @@ public:
 	void snapshot(const std::string& name, const City* sol, const std::string& filename);
 
 	void status(const std::string& status);
+	void pause(int length=0);
 private:
 	bool on;
 };
