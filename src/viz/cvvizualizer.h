@@ -10,11 +10,14 @@
 
 #include "model/solution.h"
 
-class vizualizer
+class cvvizualizer
 {
 public:
-	vizualizer(const std::string& name);
-	virtual ~vizualizer();
+	cvvizualizer(const std::string& name);
+	virtual ~cvvizualizer();
+
+	cvvizualizer(const cvvizualizer&other) = delete;
+	cvvizualizer& operator=(const cvvizualizer& other) = delete;
 
 	void pause(int length=0);
 	void show(const Solution* sol);

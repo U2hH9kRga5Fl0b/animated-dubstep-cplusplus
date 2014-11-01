@@ -35,7 +35,7 @@ do                                                                              
 
 
 #define TIME_IN_A_DAY (60*60*12 * 5)
-
+#define STAGING_AREAS_GO_WITH_LANDFILLS 0
 
 
 
@@ -51,6 +51,9 @@ do                                                                              
 #define ENFORCE_INVENTORIES      0
 #define ENFORCE_NO_REPEATED_STOP 1
 #define ENFORCE_TRUCK_TYPES      0
+
+
+#define VISUAL 1
 
 
 

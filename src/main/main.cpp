@@ -5,11 +5,11 @@
  *      Author: thallock
  */
 
-#include "main/main.h"
+#include "main/global.h"
 
 int main(int argc, char **argv)
 {
-	srand(5000000);
+	srand(5000002);
 	parse_args(argc, argv);
 	solve();
 }

@@ -603,6 +603,13 @@ void Solution::exchange(int driver1, int begin1, int end1,
 		return;
 	}
 
+	int newbiggestlength = lens[driver2] - 1 + diff;
+	if (newbiggestlength >= stops.cols())
+	{
+		stops.set_num_columns(newbiggestlength + 5);
+		times.set_num_columns(newbiggestlength + 5);
+	}
+
 	for (int i = lens[driver2] - 1 + diff; i >= begin2 + len2 + diff; i--)
 		stops.at(driver2, i) = stops.at(driver2, i - diff);
 	for (int i = 0; i < diff; i++)

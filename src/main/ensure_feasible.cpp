@@ -5,9 +5,17 @@
  *      Author: thallock
  */
 
-#include "main/main.h"
+#include "main/global.h"
 
-void ensure_feasible()
+void ensure_feasible(Solution* solution)
 {
-	// do nothing yet...
+	int num_drivers = solution->get_num_drivers();
+	for (int d=0; d<num_drivers; d++)
+	{
+		int length = solution->get_number_of_stops(d);
+		for (int s = 0; s < length; s++)
+		{
+
+		}
+	}
 }

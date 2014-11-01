@@ -7,13 +7,12 @@
 
 #include "seed/seed.h"
 
+#include "main/global.h"
 #include "opts/depth_first_search.h"
-
-bool search_for_path(Solution* solution, int driver, int start, int stop, int maxdepth, insertion& ins);
 
 Solution* get_nearest_seed(const City* c)
 {
-	Solution* sol = new Solution { c, c->num_actions };
+	Solution* sol = new Solution { c, 3 * c->num_actions };
 
 	for (int d = 0; d < c->num_trucks; d++)
 	{

@@ -5,15 +5,15 @@
  *      Author: thallock
  */
 
-#include "main/main.h"
+#include "main/global.h"
 #include "seed/seed.h"
-#include "viz/vizualizer.h"
+#include "viz/cvvizualizer.h"
 
 void make_video()
 {
 	Solution* sol = get_nearest_seed(city);
 
-	vizualizer v {"foobar"};
+	cvvizualizer v { "foobar" };
 	v.show(sol);
 	v.pause(1000);
 

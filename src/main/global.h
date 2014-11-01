@@ -8,11 +8,13 @@
 #ifndef ARGUMENTS_HPP_
 #define ARGUMENTS_HPP_
 
-#include "model/solution.h"
+#include "viz/viewer.h"
 
 extern City* city;
 extern std::string infile;
 extern std::string outfile;
+extern std::string logfile;
+extern Viewer viewer;
 
 void parse_args(int argc, char **argv);
 

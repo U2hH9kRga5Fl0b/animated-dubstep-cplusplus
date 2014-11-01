@@ -5,7 +5,7 @@
  *      Author: thallock
  */
 
-#include "main/main.h"
+#include "main/global.h"
 
 #include "seed/seed.h"
 

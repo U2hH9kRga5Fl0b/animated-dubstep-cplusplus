@@ -12,21 +12,9 @@
 #include "model/trucktypes.h"
 #include "intarray.h"
 #include "model/yard.h"
+#include "model/coord.h"
 
 #include <vector>
-
-class Coord
-{
-public:
-	Coord();
-	Coord(double x, double y);
-	Coord(const Coord& other);
-	~Coord();
-	double dist(const Coord& other) const;
-	double x, y;
-};
-
-
 
 #define START_ACTION_INDEX -1534
 #define END_ACTION_INDEX   -1535

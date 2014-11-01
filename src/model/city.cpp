@@ -8,6 +8,7 @@
 #include "model/city.h"
 
 #include "model/landfill.h"
+#include "main/gen_points.h"
 
 #include <cstdlib>
 #include <cmath>
@@ -21,13 +22,6 @@
 #define ALL_YARD_COMBOS 0
 
 #include <set>
-
-Coord::Coord(double x_, double y_) : x{x_}, y{y_} {}
-Coord::Coord(const Coord& other) : Coord{other.x, other.y} {}
-Coord::Coord() : Coord{rand() / (double) RAND_MAX, rand() / (double) RAND_MAX} {}
-Coord::~Coord() {}
-double Coord::dist(const Coord& other) const { double dx = other.x-x; double dy=other.y-y; return sqrt(dx*dx+dy*dy);}
-
 
 City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num_trucks_) :
 #if ALL_YARD_COMBOS
@@ -49,6 +43,10 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	donttouch        {                  }
 {
 	int ndx = 0;
+	gen_points(     &coords[0], num_landfills,
+			&coords[num_landfills], num_stagingareas,
+			&coords[num_landfills + num_stagingareas], num_requests,
+			CLUSTER_CITY_TYPE);
 
 	for (int i = 0; i < num_landfills; i++)
 	{
@@ -159,7 +157,7 @@ City::~City()
 std::ostream& operator<<(std::ostream& out, const City& c)
 {
 	out << "actions:\n";
-	for (int i=0;i<c.num_actions;i++)
+	for (int i = 0; i < c.num_actions; i++)
 	{
 		out << std::setw(4) << i << ':' << c.actions[i] << std::endl;
 	}
@@ -169,7 +167,7 @@ std::ostream& operator<<(std::ostream& out, const City& c)
 		out << std::setw(5) << i << ':';
 		for (int j = 0; j < c.num_actions; j++)
 		{
-			if (c.possibles.at(i,j) < 0)
+			if (c.possibles.at(i, j) < 0)
 			{
 				break;
 			}
@@ -178,16 +176,19 @@ std::ostream& operator<<(std::ostream& out, const City& c)
 		out << std::endl;
 	}
 	out << "trucks:\n";
-	for (int i=0;i<c.num_trucks;i++)
+	for (int i = 0; i < c.num_trucks; i++)
 	{
 		out << std::setw(4) << i << ':' << truck_name(c.trucks[i]) << std::endl;
 	}
 
-	if (c.num_locations < 50)
+	out << "locs:\n";
+	for (int i = 0; i < c.num_locations; i++)
 	{
-		out << "distances:\n";
-		out << c.durations << std::endl;
+		out << "\t" << std::setw(3) << i << ":" << std::setw(8) << c.coords[i].x << ", " << std::setw(8) << c.coords[i].y << "\n";
 	}
+
+	out << "distances:\n";
+	out << c.durations << std::endl;
 	return out;
 }
 

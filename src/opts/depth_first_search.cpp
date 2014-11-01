@@ -8,6 +8,7 @@
 #include "opts/depth_first_search.h"
 
 #include <set>
+#include <algorithm>
 
 namespace
 {
@@ -35,19 +36,18 @@ typedef struct
 } stuff;
 
 
-struct altern
+class altern
 {
+public:
+	altern() : poss{-1}, time{-1} {};
+	~altern(){};
 	int poss;
 	int time;
 
 	bool operator<(const altern& other) const
 	{
+		if (time == other.time) return poss > other.poss;
 		return time < other.time;
-	}
-
-	bool operator==(const altern& other) const
-	{
-		return other.poss == poss;
 	}
 };
 
@@ -59,7 +59,6 @@ bool backtrack(stuff& stuff)
 	}
 
 	bool foundapath = false;
-
 
 	std::set<altern> nexts;
 
@@ -78,10 +77,8 @@ bool backtrack(stuff& stuff)
 
 		if (		stuff.cdepth >= 0 &&
 				stuff.city->get_action(stuff.cinters[stuff.cdepth]).op == Unstore &&
-				stuff.city->get_action(poss).op == Store
-#if 0
-				&& stuff.city->get_action(stuff.times[stuff.cdepth]).location == stuff.city->get_action(poss).location
-#endif
+				stuff.city->get_action(poss).op == Store &&
+				stuff.city->get_action(stuff.cinters[stuff.cdepth]).location == stuff.city->get_action(poss).location
 			)
 		{
 			// skip these for now...
@@ -108,7 +105,7 @@ bool backtrack(stuff& stuff)
 			continue;
 		}
 
-		nexts.insert(a);
+		nexts.insert(altern{a});
 	}
 
 	if (nexts.size() == 0)

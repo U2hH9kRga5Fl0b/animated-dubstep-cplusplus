@@ -5,13 +5,15 @@
  *      Author: thallock
  */
 
-#include "main/main.h"
+#include "main/global.h"
 
 #include <fstream>
 
 City* city;
 std::string infile;
 std::string outfile;
+std::string logfile;
+Viewer viewer;
 
 void parse_args(int argc, char **argv)
 {
@@ -43,11 +45,10 @@ void parse_args(int argc, char **argv)
 
 	if (!found_city)
 	{
-		city = new City{5, 1, 1, 2};
+		city = new City{20, 1, 1, 2};
 		{
 			std::ofstream os{"city.txt"};
 			os << *city << std::endl;
-			log() << *city << std::endl;
 		}
 	}
 }

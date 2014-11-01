@@ -5,7 +5,7 @@
  *      Author: thallock
  */
 
-#include "viz/vizualizer.h"
+#include "viz/cvvizualizer.h"
 
 #define USE_BACKGROUND_IMAGE 0
 
@@ -15,7 +15,7 @@
 #define default_width  1000
 #define default_height 1000
 #endif
-#define image_update_time 20
+#define image_update_time 0
 #define SPACER
 
 #include <opencv/highgui.h>
@@ -25,6 +25,40 @@
 
 #include <chrono>
 #include <mutex>
+
+
+
+#define INCREASE(x)                      \
+do {                                     \
+	if ((x) == 0.0)                  \
+	{                                \
+		x = 1;                   \
+	}                                \
+	else if ((x) < 0.0)              \
+	{                                \
+		x = .9 * x;              \
+	}                                \
+	else                             \
+	{                                \
+		x = 1.1 * x;             \
+	}                                \
+} while(0)
+
+#define DECREASE(x)                      \
+do {                                     \
+	if ((x) == 0.0)                  \
+	{                                \
+		x = 1;                   \
+	}                                \
+	else if ((x) < 0.0)              \
+	{                                \
+		x = 1.1 * x;             \
+	}                                \
+	else                             \
+	{                                \
+		x = .9 * x;              \
+	}                                \
+} while(0)
 
 namespace
 {
@@ -113,6 +147,10 @@ namespace
 	{
 		double minx, miny, maxx, maxy;
 		get_bounds(sol->get_city(), minx, maxx, miny, maxy);
+		DECREASE(minx);
+		DECREASE(miny);
+		INCREASE(maxx);
+		INCREASE(maxy);
 
 		// std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count()
 
@@ -142,10 +180,13 @@ namespace
 				cv::Point next((int) x, (int) y);
 				cv::circle(istate->mat, next, 3, color);
 
-				if (prev.x == 0 && prev.y == 0)
+				if ((prev.x == 0 && prev.y == 0) ||
+						(next.x == 0 && next.y == 0))
 				{
-					std::cerr << x << ", " << y << std::endl;
-					std::cerr << "wth?" << std::endl;
+					err() << *sol->get_city() << std::endl;
+					err() << x << ", " << y << std::endl;
+					err() << "wth?" << std::endl;
+
 					trap();
 				}
 
@@ -173,6 +214,10 @@ namespace
 	{
 		double minx, miny, maxx, maxy;
 		get_bounds(c, minx, maxx, miny, maxy);
+		DECREASE(minx);
+		DECREASE(miny);
+		INCREASE(maxx);
+		INCREASE(maxy);
 
 		cv::Scalar& color = istate->get_color(0);
 
@@ -194,6 +239,10 @@ namespace
 	{
 		double minx, miny, maxx, maxy;
 		get_bounds(sol->get_city(), minx, maxx, miny, maxy);
+		DECREASE(minx);
+		DECREASE(miny);
+		INCREASE(maxx);
+		INCREASE(maxy);
 
 		for (int driver = 0; driver < sol->get_num_drivers(); driver++)
 		{
@@ -239,17 +288,17 @@ namespace
 	}
 }
 
-vizualizer::vizualizer(const std::string& name)
+cvvizualizer::cvvizualizer(const std::string& name)
 {
 	internal_state = new state(name);
 }
 
-vizualizer::~vizualizer()
+cvvizualizer::~cvvizualizer()
 {
 	delete get_state(internal_state);
 }
 
-void vizualizer::show(const Solution* sol)
+void cvvizualizer::show(const Solution* sol)
 {
 	state* istate = get_state(internal_state);
 	std::lock_guard<std::mutex> lock{istate->mut};
@@ -264,7 +313,7 @@ void vizualizer::show(const Solution* sol)
 }
 
 
-void vizualizer::show(const Solution* sol, int time)
+void cvvizualizer::show(const Solution* sol, int time)
 {
 	state* istate = get_state(internal_state);
 	std::lock_guard<std::mutex> lock{istate->mut};
@@ -288,7 +337,7 @@ void vizualizer::show(const Solution* sol, int time)
 }
 
 
-void vizualizer::show(const City* c)
+void cvvizualizer::show(const City* c)
 {
 	state* istate = get_state(internal_state);
 	std::lock_guard<std::mutex> lock{istate->mut};
@@ -300,19 +349,19 @@ void vizualizer::show(const City* c)
 	cv::waitKey(image_update_time);
 }
 
-void vizualizer::pause(int length)
+void cvvizualizer::pause(int length)
 {
 	cv::waitKey(length);
 }
 
-void vizualizer::snapshot(std::string file)
+void cvvizualizer::snapshot(std::string file)
 {
 	std::lock_guard<std::mutex> lock{get_state(internal_state)->mut};
 	std::lock_guard<std::mutex> global{graphics_mutex};
 	cv::imwrite(get_state(internal_state)->name, get_state(internal_state)->mat);
 }
 
-void vizualizer::write_frame_of_video()
+void cvvizualizer::write_frame_of_video()
 {
 	state* istate = get_state(internal_state);
 // must be already locked...
