@@ -525,6 +525,7 @@ void Solution::paste(int driver, int index, std::vector<int> path)
 	trap();
 }
 
+
 void Solution::exchange(int driver1, int begin1, int end1,
 		int driver2, int begin2, int end2)
 {
@@ -536,6 +537,7 @@ void Solution::exchange(int driver1, int begin1, int end1,
 	INBOUNDS(begin2, end2, lens[driver2]);
 
 //	log() << driver1 << ", " << begin1 << ", " << end1 << ", " << driver2 << ", " << begin2 << ", " << end2 << std::endl;
+//	log() << (*this) << std::endl;
 
 	int len1 = 1 + end1 - begin1;
 	int len2 = 1 + end2 - begin2;
@@ -561,10 +563,10 @@ void Solution::exchange(int driver1, int begin1, int end1,
 		for (int i = 0; i < end2 - begin2 + 1; i++)
 			stops.at(driver1, ndx++) = t[begin2 - begin1 + i];
 		for (int i = end1+1; i < begin2; i++)
+			stops.at(driver1, ndx++) = t[i - begin1];
+		for (int i = 0; i <= end1 - begin1; i++)
 			stops.at(driver1, ndx++) = t[i];
-		for (int i = 0; i <= end1; i++)
-			stops.at(driver1, ndx++) = t[i];
-		delete t;
+		delete[] t;
 		refresh();
 		return;
 	}
@@ -606,6 +608,7 @@ void Solution::exchange(int driver1, int begin1, int end1,
 	int newbiggestlength = lens[driver2] - 1 + diff;
 	if (newbiggestlength >= stops.cols())
 	{
+		log() << "resizing" << std::endl;
 		stops.set_num_columns(newbiggestlength + 5);
 		times.set_num_columns(newbiggestlength + 5);
 	}
@@ -643,6 +646,12 @@ void Solution::refresh()
 		for (int s = 0; s < stops.cols(); s++)
 		{
 			int action = stops.at(d, s);
+			if (action > c->num_actions)
+			{
+				err() << "Cannot refresh from here." << std::endl;
+				err() << (*this) << std::endl;
+				trap();
+			}
 			if (action < 0)
 			{
 				lens[d] = s;
@@ -664,7 +673,7 @@ void Solution::refresh()
 			}
 			else
 			{
-				times.at(d, s) = times.at(d, s-1) + c->get_time_to(stops.at(d, s-1), action);
+				times.at(d, s) = times.at(d, s - 1) + c->get_time_to(stops.at(d, s - 1), action);
 			}
 			if (c->get_action(action).value)
 			{
