@@ -68,7 +68,15 @@ Solution::~Solution()
 int Solution::get_action_index(int driver, int stop) const
 {
 	INBOUNDS(0, driver, get_num_drivers());
-	INBOUNDS(0, stop, stops.cols());
+	INBOUNDS(-1, stop, stops.cols()+1);
+	if (stop == -1)
+	{
+		return START_ACTION_INDEX;
+	}
+	else if (stop == lens[driver])
+	{
+		return END_ACTION_INDEX;
+	}
 	return stops.at(driver, stop);
 }
 
@@ -176,6 +184,13 @@ void Solution::ensure_valid() const
 					trap();
 				}
 
+				if (!c->driver_can_service(d, stop))
+				{
+					err() << (*this) << std::endl;
+					err() << "driver " << d << " makes stop " << stop << " which is not legal" << std::endl;
+					trap();
+				}
+
 				if (c->get_action(stop).value)
 				{
 					if (counts[stop]++ > 1)
@@ -277,7 +292,6 @@ std::ostream& operator<<(std::ostream& out, const Solution& sol)
 		out << std::endl;
 		for (int d = 0; d < sol.get_num_drivers(); d++)
 		{
-
 			out << std::setw(2) << d << " len=" << std::setw(3) << sol.lens[d] << ':';
 			for (int s = 0; s < sol.stops.cols(); s++)
 			{
@@ -537,7 +551,7 @@ void Solution::exchange(int driver1, int begin1, int end1,
 	INBOUNDS(begin2, end2, lens[driver2]);
 
 //	log() << driver1 << ", " << begin1 << ", " << end1 << ", " << driver2 << ", " << begin2 << ", " << end2 << std::endl;
-//	log() << (*this) << std::endl;
+//	log() << "before:\n" << (*this) << std::endl;
 
 	int len1 = 1 + end1 - begin1;
 	int len2 = 1 + end2 - begin2;
@@ -568,8 +582,6 @@ void Solution::exchange(int driver1, int begin1, int end1,
 			stops.at(driver1, ndx++) = t[i];
 		delete[] t;
 		refresh();
-
-
 		return;
 	}
 
@@ -615,10 +627,13 @@ void Solution::exchange(int driver1, int begin1, int end1,
 		times.set_num_columns(newbiggestlength + 5);
 	}
 
+	//  make room
 	for (int i = lens[driver2] - 1 + diff; i >= begin2 + len2 + diff; i--)
 		stops.at(driver2, i) = stops.at(driver2, i - diff);
+	// fill in
 	for (int i = 0; i < diff; i++)
 		stops.at(driver2, begin2 + len2 + i) = stops.at(driver1, begin1 + len2 + i);
+	// close
 	for (int i = begin1 + len2; i < lens[driver1] - diff; i++)
 		stops.at(driver1, i) = stops.at(driver1, i + diff);
 
@@ -627,6 +642,93 @@ void Solution::exchange(int driver1, int begin1, int end1,
 		if (stops.at(driver1, i) < 0)
 			break;
 		stops.at(driver1, i) = -1;
+	}
+
+	refresh();
+}
+
+void Solution::insert_after(int driver1, int begin1, int end1, int driver2, int begin2)
+{
+	INBOUNDS(0, driver1, get_num_drivers());
+	INBOUNDS(0, driver2, get_num_drivers());
+	INBOUNDS(-1, begin1, end1+1);
+	INBOUNDS(begin1, end1, lens[driver1]);
+	INBOUNDS(-1, begin2, lens[driver2]);
+
+	log() << driver1 << ", " << begin1 << ", " << end1 << ", " << driver2 << ", " << begin2 << std::endl;
+	log() << "before:\n" << (*this) << std::endl;
+
+
+	int diff = end1 - begin1;
+
+	if (driver1 == driver2)
+	{
+		int first, mid, end;
+		if (begin2 < begin1)
+		{
+			first = begin2;
+			mid = begin1;
+			end = end1;
+		}
+		else
+		{
+			first = begin1;
+			mid = end1;
+			end = begin2;
+		}
+		int len1 = mid - first;
+		int len2 = end - mid;
+
+//		if (len1 < len2)
+//		{
+		int *tmp = new int[len1];
+		for (int i = 0; i < len1; i++)
+		{
+			tmp[i] = stops.at(driver1, first + i);
+		}
+		for (int i = 0; i < len2; i++)
+		{
+			stops.at(driver1, first + i) = stops.at(driver1, first + len1 + i);
+			log() << (*this) << std::endl;
+		}
+		for (int i = 0; i < len1; i++)
+		{
+			stops.at(driver1, first + len2 + i) = tmp[i];
+			log() << (*this) << std::endl;
+		}
+		delete[] tmp;
+//		}
+//		else
+//		{
+//			... could be faster...
+//		}
+	}
+	else
+	{
+		//  make room
+		for (int i = lens[driver2] + diff - 1; i > begin2 + diff; i--)
+		{
+			stops.at(driver2, i + 1) = stops.at(driver2, i - diff);
+		}
+		// fill in
+		for (int i = 0; i <= diff; i++)
+		{
+			stops.at(driver2, begin2 + 1 + i) = stops.at(driver1, begin1 + i);
+		}
+		// close
+		for (int i = begin1; i < lens[driver1] - diff - 1; i++)
+		{
+			stops.at(driver1, i) = stops.at(driver1, i + diff + 1);
+		}
+
+		for (int i=lens[driver1] - diff - 1; i < stops.cols(); i++)
+		{
+			if (stops.at(driver1, i) < 0)
+			{
+				break;
+			}
+			stops.at(driver1, i) = -1;
+		}
 	}
 
 	refresh();

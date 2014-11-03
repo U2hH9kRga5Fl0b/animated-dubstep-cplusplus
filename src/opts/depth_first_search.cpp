@@ -18,10 +18,10 @@ namespace
 typedef struct
 {
 	// global
+	int driver;
 	bool *already_serviced;
 	const City* city;
 	int firstaction;
-	int lastaction;
 	int maxdepth;
 
 	// best
@@ -33,6 +33,8 @@ typedef struct
 	int cinters[MAX_SEARCH_DEPTH];
 	int times[MAX_SEARCH_DEPTH];
 	int cdepth;
+
+	std::function<bool(const City*, int action)> cri;
 } stuff;
 
 
@@ -65,15 +67,18 @@ bool backtrack(stuff& stuff)
 	int lastaction = stuff.cdepth == -1 ? stuff.firstaction : stuff.cinters[stuff.cdepth];
 	for (int p = 0; p < stuff.city->possibles.cols(); p++)
 	{
-		int poss = stuff.city->possibles.at(lastaction, p);
+		int poss = lastaction >= 0 ? stuff.city->possibles.at(lastaction, p) : p;
 		if (poss < 0)
 		{
 			break;
 		}
-		if (stuff.already_serviced[poss])
+		if (stuff.already_serviced[poss]
+			|| !stuff.city->driver_can_service(stuff.driver, poss))
 		{
 			continue;
 		}
+
+		// need to check inventories...
 
 		if (		stuff.cdepth >= 0 &&
 				stuff.city->get_action(stuff.cinters[stuff.cdepth]).op == Unstore &&
@@ -88,12 +93,14 @@ bool backtrack(stuff& stuff)
 
 		altern a;
 		a.poss = poss;
-		a.time = (stuff.cdepth == 0 ? 0 : stuff.times[stuff.cdepth]) + stuff.city->get_time_to(lastaction, poss);
+		a.time = (stuff.cdepth <= 0 ? 0 : stuff.times[stuff.cdepth]) + stuff.city->get_time_to(lastaction, poss);
 
-		bool is_destination = stuff.lastaction == -1 ? stuff.city->get_action(poss).value : poss == lastaction;
-
-		if (is_destination && a.time < stuff.besttime)
+		if (stuff.cri(stuff.city, poss))
 		{
+			if (a.time >= stuff.besttime)
+			{
+				continue;
+			}
 			foundapath = true;
 			stuff.besttime = a.time;
 			for (int i = 0; i <= stuff.cdepth; i++)
@@ -125,6 +132,12 @@ bool backtrack(stuff& stuff)
 
 		bool has_value = stuff.city->get_action(a.poss).value;
 
+		if (a.poss < 0)
+		{
+			err() << "uhoh" << std::endl;
+			trap();
+		}
+
 		stuff.cdepth++;
 		stuff.cinters[stuff.cdepth] = a.poss;
 		stuff.times[stuff.cdepth] = a.time;
@@ -141,16 +154,11 @@ bool backtrack(stuff& stuff)
 
 }
 
-bool search_for_path(Solution* solution, int stop, int maxdepth, insertion& ins)
+bool search_for_path(Solution* solution, int stop, int maxdepth, insertion& ins, std::function<bool(const City*, int action)> cri)
 {
 	if (maxdepth > MAX_SEARCH_DEPTH)
 	{
 		err() << "This is not supported." << std::endl;
-		trap();
-	}
-
-	if (ins.start == 0)
-	{
 		trap();
 	}
 
@@ -161,19 +169,13 @@ bool search_for_path(Solution* solution, int stop, int maxdepth, insertion& ins)
 		s.already_serviced[i] = (i < ins.start || i > stop) && solution->already_serviced(i);
 	}
 	s.firstaction = solution->get_action_index(ins.driver, ins.start - 1);
-	if (stop < 0)
-	{
-		s.lastaction = -1;
-	}
-	else
-	{
-		s.lastaction = solution->get_action_index(ins.driver, stop);
-	}
 	s.city=solution->get_city();
 	s.maxdepth = maxdepth;
 	s.bestlen = -1;
 	s.besttime = INT_MAX;
 	s.cdepth = -1;
+	s.cri=cri;
+	s.driver = ins.driver;
 
 	if (!backtrack(s))
 	{

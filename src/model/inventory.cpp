@@ -245,6 +245,10 @@ void InventoryTimeline::clear(const City* city)
 
 void InventoryTimeline::action_performed(int driver, int stop, int time, const Action* action)
 {
+	if (!ENFORCE_INVENTORIES)
+	{
+		return;
+	}
 	if (action->op != Unstore && action->op != Store)
 	{
 		return;
@@ -261,8 +265,12 @@ void InventoryTimeline::action_performed(int driver, int stop, int time, const A
 	std::for_each(it, tl->end(), myfunc{action, false});
 }
 
-bool InventoryTimeline::in_capacity()
+bool InventoryTimeline::in_capacity() const
 {
+	if (!ENFORCE_INVENTORIES)
+	{
+		return true;
+	}
 	std::map<int, inventory*>& tl = *(std::map<int, inventory*>*) timeline;
 	return std::all_of(tl.begin(), tl.end(), [](const std::pair<int, inventory*>& it)
 	{
@@ -272,6 +280,10 @@ bool InventoryTimeline::in_capacity()
 
 std::ostream& operator<<(std::ostream& out, const InventoryTimeline& line)
 {
+	if (!ENFORCE_INVENTORIES)
+	{
+		return out;
+	}
 	std::map<int, inventory*>* tl = (std::map<int, inventory*>*) line.timeline;
 	auto end = tl->end();
 	for (auto it = tl->begin(); it != end; ++it)

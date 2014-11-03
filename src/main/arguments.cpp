@@ -45,7 +45,7 @@ void parse_args(int argc, char **argv)
 
 	if (!found_city)
 	{
-		city = new City{100, 6, 6, 10};
+		city = new City{100, 10, 10, 10};
 		{
 			std::ofstream os{"city.txt"};
 			os << *city << std::endl;

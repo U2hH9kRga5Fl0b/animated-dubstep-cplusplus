@@ -15,7 +15,7 @@
 #define default_width  1000
 #define default_height 1000
 #endif
-#define image_update_time 500
+#define image_update_time 20
 #define SPACER
 
 #include <opencv/highgui.h>

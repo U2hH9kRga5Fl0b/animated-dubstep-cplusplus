@@ -16,8 +16,8 @@
 
 #include <vector>
 
-#define START_ACTION_INDEX -1534
-#define END_ACTION_INDEX   -1535
+#define START_ACTION_INDEX -97
+#define END_ACTION_INDEX   -23
 
 
 class City
@@ -76,6 +76,14 @@ public:
 	{
 		INBOUNDS(0, action, num_actions);
 		return actions[action].op == Unstore || actions[action].op == Store;
+	}
+
+	inline bool driver_can_service(int driverno, int action) const
+	{
+		return
+				action == START_ACTION_INDEX ||
+				action == END_ACTION_INDEX ||
+				get_action(action).accessible[trucks[driverno]];
 	}
 
 	std::string get_decription(int location) const;

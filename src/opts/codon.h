@@ -32,6 +32,9 @@ public:
 };
 
 
+
+
 void exchange_subpath_search(Solution* solution, int fail_threshold);
+void ensure_local_minima(Solution* solution);
 
 #endif /* CODON_H_ */

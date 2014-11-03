@@ -9,7 +9,14 @@
 
 int main(int argc, char **argv)
 {
-	srand(5000002);
+	// TODO:
+	// Enforce the inventories: especially within the codon search
+	// the codon search should handle sub-paths of zero length
+	// the codon search should handle fixing up each potential codon swap
+
+
+	// there is still a bug with the nearest one...
+	srand(5000007);
 	parse_args(argc, argv);
 	solve();
 	std::cout << "done" << std::endl;

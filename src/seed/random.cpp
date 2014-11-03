@@ -30,7 +30,7 @@ Solution* get_random_solution(const City* c)
 	}
 
 	bool canserviceany = true;
-	while(canserviceany)
+	while (canserviceany)
 	{
 		canserviceany = false;
 		for (int d = 0; d < c->num_trucks; d++)

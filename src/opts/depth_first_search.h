@@ -11,6 +11,45 @@
 #include "model/solution.h"
 
 #include <vector>
+#include <functional>
+
+
+struct ends
+{
+	bool operator()(const City* city, int action)
+	{
+		return get_truck_out_state(city, action) == TRUCK_STATE_NONE;
+	}
+};
+
+struct begins
+{
+	bool operator()(const City* city, int action)
+	{
+		return get_truck_in_state(city, action) == TRUCK_STATE_NONE;
+	}
+};
+
+struct has_value
+{
+	bool operator()(const City* city, int action)
+	{
+		return city->get_action(action).value;
+	}
+};
+
+struct arrives_at
+{
+	arrives_at(int action) : lastaction{action} {}
+
+	bool operator()(const City* city, int action)
+	{
+		return action == lastaction;
+	}
+private:
+	int lastaction;
+};
+
 
 class insertion
 {
@@ -38,6 +77,6 @@ public:
 	}
 };
 
-bool search_for_path(Solution* solution, int end_index, int maxdepth, insertion& ins);
+bool search_for_path(Solution* solution, int end_index, int maxdepth, insertion& ins, std::function<bool(const City*, int action)> cri=has_value{});
 
 #endif /* DEPTH_FIRST_SEARCH_H_ */

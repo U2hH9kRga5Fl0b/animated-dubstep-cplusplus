@@ -10,6 +10,7 @@
 
 #include "model/city.h"
 #include "model/inventory.h"
+#include "model/truckstate.h"
 
 class Solution
 {
@@ -44,8 +45,18 @@ public:
 	void cut(int driver, int start, int stop);
 	void paste(int driver, int index, std::vector<int> path);
 
-	// The begins remain unchanged after this method is done...
 	void exchange(int driver1, int begin1, int end1, int driver2, int begin2, int end2);
+	void insert_after(int driver1, int begin1, int end1, int driver2, int begin2);
+
+	truck_state get_in_state(int driver, int stop) const
+	{
+		return get_truck_in_state(c, get_action_index(driver, stop));
+	}
+	truck_state get_out_state(int driver, int stop) const
+	{
+		return get_truck_out_state(c, get_action_index(driver, stop));
+	}
+	friend bool is_feasible(const Solution* solution);
 
 	void refresh();
 private:
@@ -56,7 +67,6 @@ private:
 	int *stop_numbers;
 
 	int *lens;
-
 	intarray times;
 	InventoryTimeline invs;
 };

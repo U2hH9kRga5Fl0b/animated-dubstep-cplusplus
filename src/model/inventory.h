@@ -22,7 +22,7 @@ public:
 	void clear(const City* original);
 	void action_performed(int driver, int stop, int time, const Action* action);
 
-	bool in_capacity();
+	bool in_capacity() const;
 
 	friend std::ostream& operator<<(std::ostream& out, const InventoryTimeline& line);
 private:
