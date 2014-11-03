@@ -6,7 +6,7 @@
  */
 
 
-
+#if 0
 
 /*
  * codon.cpp
@@ -376,3 +376,5 @@ bool apply_first_random_exchange(Solution* solution)
 }
 #endif
 
+
+#endif

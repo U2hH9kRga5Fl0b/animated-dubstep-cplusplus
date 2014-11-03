@@ -295,6 +295,52 @@ namespace
 		ss << "time=" << time;
 		cv::putText(istate->mat, ss.str(), cv::Point(0, 40), CV_FONT_HERSHEY_PLAIN, 1.0, cv::Scalar{255,255,255});
 	}
+
+	void print_directions_to_mat(const directions& dirs, state* istate)
+	{
+		// generate bounds:
+		// 39.558185,-105.226243
+		// 40.211516,-104.745591
+//		double minx = 39.558185;
+//		double maxx = 40.211516;
+//		double miny = -105.226243;
+//		double maxy = -104.745591;
+
+		// image bounds:
+		// 40.073125, -104.645848
+		// 39.405639, -105.473585
+		double minx = 39.405639;
+		double maxx = 40.073125;
+		double miny = -105.473585;
+		double maxy = -104.645848;
+
+		istate->mat = istate->mat = cv::imread("BailyToHudson.png", CV_LOAD_IMAGE_COLOR);
+
+		cv::Scalar& color = istate->get_color(0);
+		cv::Point prev(-1, -1);
+
+		auto oend = dirs.steps.end();
+		for (auto oit = dirs.steps.begin(); oit != oend; ++oit)
+		{
+			auto iend = oit->path.end();
+			for (auto iit = oit->path.begin(); iit != iend; ++iit)
+			{
+				double x = istate->mat.cols * (iit->lat - minx) / (maxx - minx);
+				double y = istate->mat.rows * (iit->lng - miny) / (maxy - miny);
+
+//				y = istate->mat.rows - y;
+				x = istate->mat.cols - x;
+
+				cv::Point next((int) y, (int) x);
+				cv::circle(istate->mat, next, 3, color);
+				if (prev.x != -1 && prev.y != -1)
+				{
+					cv::line(istate->mat, prev, next, color, 1, 8, 0);
+				}
+				next = prev;
+			}
+		}
+	}
 }
 
 cvvizualizer::cvvizualizer(const std::string& name)
@@ -352,6 +398,19 @@ void cvvizualizer::show(const City* c)
 	std::lock_guard<std::mutex> lock{istate->mut};
 	clear_mat(istate);
 	print_city_to_mat(c, istate);
+
+	std::lock_guard<std::mutex> global{graphics_mutex};
+	imshow(istate->name, istate->mat);
+	cv::waitKey(image_update_time);
+}
+
+
+void cvvizualizer::show(const directions& dirs)
+{
+	state* istate = get_state(internal_state);
+	std::lock_guard<std::mutex> lock{istate->mut};
+	clear_mat(istate);
+	print_directions_to_mat(dirs, istate);
 
 	std::lock_guard<std::mutex> global{graphics_mutex};
 	imshow(istate->name, istate->mat);

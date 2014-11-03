@@ -9,6 +9,7 @@
 #define VIZUALIZER_H_
 
 #include "model/solution.h"
+#include "direction/directionsdb.h"
 
 class cvvizualizer
 {
@@ -23,6 +24,7 @@ public:
 	void show(const Solution* sol);
 	void show(const Solution* sol, int time);
 	void show(const City* c);
+	void show(const directions& dirs);
 
 	void snapshot(std::string file);
 

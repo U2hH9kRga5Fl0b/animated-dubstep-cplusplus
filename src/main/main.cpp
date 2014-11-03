@@ -10,6 +10,12 @@
 int main(int argc, char **argv)
 {
 	srand(5000002);
+
+
+	void show_path();
+	show_path();
+
+
 	parse_args(argc, argv);
 	solve();
 	std::cout << "done" << std::endl;
