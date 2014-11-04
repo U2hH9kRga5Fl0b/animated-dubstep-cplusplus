@@ -405,7 +405,7 @@ void cvvizualizer::snapshot(std::string file)
 {
 	std::lock_guard<std::mutex> lock{get_state(internal_state)->mut};
 	std::lock_guard<std::mutex> global{graphics_mutex};
-	cv::imwrite(get_state(internal_state)->name, get_state(internal_state)->mat);
+	cv::imwrite(get_state(internal_state)->name + "." + file, get_state(internal_state)->mat);
 }
 
 void cvvizualizer::write_frame_of_video()

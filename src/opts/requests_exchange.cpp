@@ -166,6 +166,97 @@ bool apply_exchange(Solution* s, int d1, int b1, int e1, int d2, int b2, int e2)
 	return true;
 }
 
+
+bool apply_reschedule(Solution* s, int d1, int b1, int e1, int d2, int b2)
+{
+	if (d1 == d2)
+	{
+		// not implemented yet...
+		return false;
+	}
+
+	int p1i = fpr(s, d1, b1);
+	int n1i = fnr(s, d1, e1);
+	int p2i = fpr(s, d2, b2);
+	int n2i = b2;
+
+	int pa1 = s->get_action_index(d1, p1i);
+	int fa1 = s->get_action_index(d1, b1);
+	int la1 = s->get_action_index(d1, e1);
+	int na1 = s->get_action_index(d1, n1i);
+
+	int pa2 = s->get_action_index(d2, p2i);
+	int na2 = s->get_action_index(d2, n2i);
+
+	int p1[MAX_PATH]; int p1len; int p1time;
+	int p2[MAX_PATH]; int p2len; int p2time;
+	int p3[MAX_PATH]; int p3len; int p3time;
+
+	find_path_between_requests(s, pa2, fa1, &p1[0], p1len, p1time);
+	find_path_between_requests(s, la1, na2, &p2[0], p2len, p2time);
+	find_path_between_requests(s, pa1, na1, &p3[0], p3len, p3time);
+
+	int nt = p1time + p2time + p3time;
+	int ot = plength(s, d1, p1i, b1) + plength(s, d1, e1, n1i) + plength(s, d2, p2i, n2i);
+
+	int old_cost = s->sum_all_times();
+
+	int time_delta = nt - ot;
+	if (time_delta >= 0)
+		return false;
+
+//	std::cout << d1 << ", " << b1 << ", " << e1 << ", " << d2 << ", " << b2 << ", " << e2 << std::endl;
+//	std::cout << pa1 << ", " << fa1 << ", " << la1 << ", " << na1 << std::endl;
+//	std::cout << pa2 << ", " << fa2 << ", " << la2 << ", " << na2 << std::endl;
+
+#if 0
+
+	//TODO: finish this...
+
+
+	int olen1 = n1i - p1i;
+	int olen2 = n2i - p2i;
+
+	int nlen1 = e2 - b2 + p1len + p2len;
+	int nlen2 = e1 - b1 + p3len + p4len;
+
+	int t1len = e1 - b1 + 1;
+	int *p1tmps = new int[t1len];
+	for (int i = 0; i < t1len; i++)
+		p1tmps[i] = s->get_action_index(d1, b1 + i);
+
+	s->shift(d1, n1i, nlen1 - olen1 + 2);
+	s->shift(d2, n2i, nlen2 - olen2 + 2);
+
+	int ndx = p1i + 1;
+	for (int i = 0; i < p1len; i++)
+		s->set_action(d1, ndx++, p1[i]);
+	for (int i = 0; i < t2len; i++)
+		s->set_action(d1, ndx++, p2tmps[i]);
+	for (int i = 0; i < p2len; i++)
+		s->set_action(d1, ndx++, p2[i]);
+
+	ndx = p2i + 1;
+	for (int i = 0; i < p3len; i++)
+		s->set_action(d2, ndx++, p3[i]);
+	for (int i = 0; i < t1len; i++)
+		s->set_action(d2, ndx++, p1tmps[i]);
+	for (int i = 0; i < p4len; i++)
+		s->set_action(d2, ndx++, p4[i]);
+
+	delete[] p1tmps;
+	delete[] p2tmps;
+	s->refresh();
+
+	int ntime = s->sum_all_times();
+	if (ntime != old_cost + time_delta)
+	{
+		trap();
+	}
+#endif
+	return true;
+}
+
 int get_random_request(const Solution* solution, int driver, int length, int avoid)
 {
 	int ndx = rand() % length;
@@ -244,6 +335,12 @@ bool apply_random_request_exchange(Solution* solution, int num_attempts)
 			LESS_THAN(begin2, end2);
 		}
 
+
+		// This doesn't work on reschedules that are at the end...
+		if (apply_reschedule(solution, driver1, begin1, end1, driver2, begin2))
+		{
+			return true;
+		}
 		if (apply_exchange(solution, driver1, begin1, end1, driver2, begin2, end2))
 		{
 			return true;
@@ -274,10 +371,14 @@ bool apply_first_exchange(Solution* solution)
 			const int len2 = solution->get_number_of_stops(d2);
 			for (int b2 = (d1 == d2 ? e1 + 1 : 0); b2 < len2; b2++)
 			if (IS_REQUEST(solution, d2, b2))
-			for (int e2 = b2 + 1; e2 < len2; e2++)
-			if (IS_REQUEST(solution, d2, e2))
-			if (apply_exchange(solution, d1, b1, e1, d2, b2, e2))
-				return true;
+			{
+				if (apply_reschedule(solution, d1, b1, e1, d2, b2))
+					return true;
+				for (int e2 = b2 + 1; e2 < len2; e2++)
+				if (IS_REQUEST(solution, d2, e2))
+				if (apply_exchange(solution, d1, b1, e1, d2, b2, e2))
+					return true;
+			}
 		}
 	}
 
