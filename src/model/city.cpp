@@ -16,19 +16,15 @@
 
 #define DIST_SCALE 5000
 
-
+Action sentinal_action{-1};
 
 // This doesn't work because there is no operation for 'replacing' a dumpster at a yard.
-#define ALL_YARD_COMBOS 0
+#define ALL_YARD_COMBOS 1
 
 #include <set>
 
 City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num_trucks_) :
-#if ALL_YARD_COMBOS
-	num_actions      {num_requests_+4*num_landfills_+4*5*2*num_stagingareas_},
-#else
-	num_actions      {num_requests_+4*num_landfills_+4*2*num_stagingareas_},
-#endif
+	num_actions      {num_requests_ + NUM_ACTIONS_PER_FILL * num_landfills_ + NUM_ACTIONS_PER_YARD * num_stagingareas_ },
 	num_requests     {num_requests_     },
 	num_landfills    {num_landfills_    },
 	num_stagingareas {num_stagingareas_ },
@@ -42,12 +38,12 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	actions          {nullptr           },
 	donttouch        {                  }
 {
-	int ndx = 0;
 	gen_points(     &coords[0], num_landfills,
 			&coords[num_landfills], num_stagingareas,
 			&coords[num_landfills + num_stagingareas], num_requests,
-			CLUSTER_CITY_TYPE);
+			UNIFORM_CITY_TYPE);
 
+	int ndx = 0;
 	for (int i = 0; i < num_landfills; i++)
 	{
 		Landfill l { ndx++ };
@@ -58,32 +54,38 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	}
 
 	truck_types tt[] = {small, medium, large};
-	for (int i=0;i<num_trucks;i++)
-	{
+	for (int i = 0; i < num_trucks; i++)
 		trucks[i] = tt[rand() % 3];
-	}
 
 	for (int t = 0; t < num_stagingareas; t++)
 	{
 		yards.push_back(Yard{ndx++});
-#if ALL_YARD_COMBOS
-		dumpster_size sizes[] = {none, six, nine, twelve, sixteen};
-		operation ops[] = {Store, Unstore};
-		for (int i=0;i<5;i++)
-		for (int j=0;j<5;j++)
-		for (int k=0;k<2;k++)
-		{
-			if (i==j) continue;
-			donttouch.push_back(Action{y, sizes[i], sizes[j], ops[k]});
-		}
-#else
-		dumpster_size sizes[] = {six, nine, twelve, sixteen};
-		for (int i=0;i<4;i++)
-		{
-			donttouch.push_back(Action{yards.at(t), sizes[i], none, Store});
-			donttouch.push_back(Action{yards.at(t), none, sizes[i], Unstore});
-		}
-#endif
+
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | six,     TRUCK_STATE_NONE });                // index:  0
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | nine,    TRUCK_STATE_NONE });                // index:  1
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | twelve,  TRUCK_STATE_NONE });                // index:  2
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | sixteen, TRUCK_STATE_NONE });                // index:  3
+
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_NONE, TRUCK_STATE_EMPTY | six      });               // index:  4
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_NONE, TRUCK_STATE_EMPTY | nine     });               // index:  5
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_NONE, TRUCK_STATE_EMPTY | twelve   });               // index:  6
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_NONE, TRUCK_STATE_EMPTY | sixteen  });               // index:  7
+
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | six      , TRUCK_STATE_EMPTY | nine     });  // index:  8
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | six      , TRUCK_STATE_EMPTY | twelve   });  // index:  9
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | six      , TRUCK_STATE_EMPTY | sixteen  });  // index: 10
+
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | nine     , TRUCK_STATE_EMPTY | six      });  // index: 11
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | nine     , TRUCK_STATE_EMPTY | twelve   });  // index: 12
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | nine     , TRUCK_STATE_EMPTY | sixteen  });  // index: 13
+
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | twelve   , TRUCK_STATE_EMPTY | six      });  // index: 14
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | twelve   , TRUCK_STATE_EMPTY | nine     });  // index: 15
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | twelve   , TRUCK_STATE_EMPTY | sixteen  });  // index: 16
+
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | sixteen  , TRUCK_STATE_EMPTY | six      });  // index: 17
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | sixteen  , TRUCK_STATE_EMPTY | nine     });  // index: 18
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | sixteen  , TRUCK_STATE_EMPTY | twelve   });  // index: 19
 	}
 
 	for (int i = 0; i < num_requests; i++)
@@ -98,9 +100,8 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	double avg_drive_time = 0.0;
 	for (int i = 0; i < num_locations; i++)
 	for (int j = 0; j < num_locations; j++)
-	{
 		avg_drive_time += durations.at(i,j) = (int)(DIST_SCALE * coords[i].dist(coords[j]));
-	}
+
 	log() << "average drive time: " << (avg_drive_time / (60.0 * num_locations * (num_locations - 1))) << " minutes" << std::endl;
 
 	actions = donttouch.data();
@@ -118,15 +119,11 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 		int ndx=0;
 		for (int j=num_actions-1; j>=0; j--)
 		{
-			if (!op_follows_op[actions[j].op][actions[i].op])
+			if (actions[j].entr_state != actions[i].exit_state)
 			{
 				continue;
 			}
 			if (actions[i].begin_time > actions[j].end_time)
-			{
-				continue;
-			}
-			if (actions[i].out != actions[j].in)
 			{
 				continue;
 			}
@@ -136,14 +133,21 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	}
 	log() << "average number of possibles actions: " << (avg_num_possibles / num_actions) << std::endl;
 
-	for (int i = 0; i < num_actions; i++)
-	{
-		if (actions[i].op == Unstore || actions[i].op == Store)
-		{
-			start_location = actions[i].location;
-			break;
-		}
-	}
+
+	first_landfill_index    = 0;
+	first_stagingarea_index = first_landfill_index + num_landfills * NUM_ACTIONS_PER_FILL;
+	first_request_index     = first_stagingarea_index + num_stagingareas * NUM_ACTIONS_PER_YARD;
+
+	start_location = first_stagingarea_index;
+
+	sentinal_action.entr_state = TRUCK_STATE_NONE;
+	sentinal_action.exit_state = TRUCK_STATE_NONE;
+	sentinal_action.location   = start_location;
+	sentinal_action.begin_time = 0;
+	sentinal_action.end_time   = INT_MAX;
+	sentinal_action.wait_time  = 0;
+	sentinal_action.value = 0;
+	sentinal_action.accessible[0] = sentinal_action.accessible[1] = sentinal_action.accessible[2] = 1;
 }
 
 City::~City()
@@ -211,19 +215,19 @@ std::string City::get_decription(int location) const
 		trap();
 	}
 
-	operation op = actions[anaction].op;
-	if (op == Dump)
+
+	if (is_landfill(anaction))
 	{
 		return "L";
 	}
-	else if (op == Unstore || op == Store)
+	else if (is_staging_area(anaction))
 	{
 		return "Y";
 	}
 	else
 	{
 		std::stringstream ss;
-		ss << actions[anaction].in << "->" << actions[anaction].out;
+		ss << (actions[anaction].entr_state & TRUCK_SIZE_MASK) << "->" << (actions[anaction].exit_state & TRUCK_SIZE_MASK);
 		return ss.str();
 	}
 }

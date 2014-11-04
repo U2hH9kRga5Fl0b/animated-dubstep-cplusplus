@@ -11,6 +11,8 @@
 #include <set>
 
 
+#if 0
+
 namespace
 {
 
@@ -148,7 +150,7 @@ int get_time_delta(const Solution* sol, const codon& c1, const ins_point& c2)
 
 #define SUPER_DEBUG (DEBUG && 1)
 
-bool find_best_codon(Solution *solution, const codon& c, search_method m)
+bool find_best_codon(const Solution *solution, const codon& c, search_method m)
 {
 	int num_drivers = solution->get_num_drivers();
 
@@ -161,16 +163,16 @@ bool find_best_codon(Solution *solution, const codon& c, search_method m)
 		int len = solution->get_number_of_stops(d);
 		for (int s = 0; s < len; s++)
 		{
-			if (solution->get_out_state(d, s) == c.stop)
+			if (solution->get_city()->action(solution->get_action_index(d, s)).exit_state == c.stop)
 			{
 				stopstops[d].insert(s);
 			}
-			if (solution->get_in_state(d, s) == c.start)
+			if (solution->get_city()->action(solution->get_action_index(d, s)).entr_state == c.start)
 			{
 				startstops[d].insert(s);
 			}
 			// miss the negative one right now ?
-			if (solution->get_out_state(d, s) == c.start && solution->get_in_state(d, s+1) == c.stop
+			if (solution->get_city()->action(solution->get_action_index(d, s)).exit_state == c.start && solution->get_city()->action(solution->get_action_index(d, s+1)).entr_state == c.stop
 					&& (d != c.driver || s + 1 < c.begin || c.end + 1 < s))
 			{
 				inserts[d].insert(s);
@@ -382,3 +384,5 @@ void ensure_local_minima(Solution* solution)
 		}
 	}
 }
+
+#endif

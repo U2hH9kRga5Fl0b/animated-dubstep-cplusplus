@@ -10,7 +10,12 @@
 
 #include "model/solution.h"
 
-Solution* get_random_solution(const City* c);
-Solution* get_nearest_seed(const City* c);
+Solution* get_random_solution_dfs(const City* c);
+Solution* get_nearest_seed_dfs(const City* c);
+
+Solution* get_random_solution_find(const City* c);
+Solution* get_nearest_seed_find(const City* c);
+
+
 
 #endif /* RANDOM_H_ */

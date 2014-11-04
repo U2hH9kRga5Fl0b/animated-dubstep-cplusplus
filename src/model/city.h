@@ -18,7 +18,12 @@
 
 #define START_ACTION_INDEX -97
 #define END_ACTION_INDEX   -23
+extern Action sentinal_action;
 
+#define NUM_ACTIONS_PER_YARD 20
+#define NUM_ACTIONS_PER_FILL  4
+
+inline int get_matching_staging_area_index(dumpster_size in, dumpster_size out);
 
 class City
 {
@@ -63,19 +68,30 @@ public:
 	inline bool is_start_action(const int ndx) const
 	{
 		INBOUNDS(0, ndx, num_actions);
-		return actions[ndx].op == Unstore || actions[ndx].op == Pickup;
+		return actions[ndx].entr_state == TRUCK_STATE_NONE;
 	}
 
 	inline const Action& get_action(int index) const
 	{
+		if (index == START_ACTION_INDEX || index == END_ACTION_INDEX) return sentinal_action;
 		INBOUNDS(0, index, num_actions);
 		return actions[index];
 	}
 
+	inline bool is_landfill(int action) const
+	{
+		INBOUNDS(0, action, num_actions);
+		return action >= first_landfill_index && action < first_stagingarea_index;
+	}
 	inline bool is_staging_area(int action) const
 	{
 		INBOUNDS(0, action, num_actions);
-		return actions[action].op == Unstore || actions[action].op == Store;
+		return first_stagingarea_index >= 0 && action < first_request_index;
+	}
+	inline bool is_request(int action) const
+	{
+		INBOUNDS(0, action, num_actions);
+		return action >= first_request_index && action < num_actions;
 	}
 
 	inline bool driver_can_service(int driverno, int action) const
@@ -86,9 +102,12 @@ public:
 				get_action(action).accessible[trucks[driverno]];
 	}
 
+	inline int get_staging_area_index(int staging_area, dumpster_size in, dumpster_size out)
+	{
+		return first_stagingarea_index + 20 * staging_area + get_matching_staging_area_index(in, out);
+	}
+
 	std::string get_decription(int location) const;
-
-
 
 	int num_actions;
 	int num_requests;
@@ -106,12 +125,113 @@ public:
 
 	std::vector<Yard> yards;
 
+	int first_landfill_index;
+	int first_stagingarea_index;
+	int first_request_index;
+
 	friend std::ostream& operator<<(std::ostream& out, const City& a);
 
 private:
 	const Action *actions;
 	std::vector<Action> donttouch;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+inline int get_matching_landfill_index(dumpster_size s)
+{
+	switch (s)
+	{
+		case none:     trap(); return -1;
+		case six:      return 0;
+		case nine:     return 1;
+		case twelve:   return 2;
+		case sixteen:  return 3;
+		default:       trap(); return -1;
+	}
+}
+
+inline int get_matching_staging_area_index(dumpster_size in, dumpster_size out)
+{
+	switch(in)
+	{
+		case none:
+			switch(out)
+			{
+				case none:    trap(); break;
+				case six:     return  4;
+				case nine:    return  5;
+				case twelve:  return  6;
+				case sixteen: return  7;
+				default:      trap(); break;
+			} break;
+		case six:
+			switch(out)
+			{
+				case none:    return  0;
+				case six:     trap(); break;
+				case nine:    return  8;
+				case twelve:  return  9;
+				case sixteen: return 10;
+				default:      trap(); break;
+			} break;
+		case nine:
+			switch(out)
+			{
+				case none:    return  1;
+				case six:     return 11;
+				case nine:    trap(); break;
+				case twelve:  return 12;
+				case sixteen: return 13;
+				default:      trap(); break;
+			} break;
+		case twelve:
+			switch(out)
+			{
+				case none:    return  2;
+				case six:     return 14;
+				case nine:    return 15;
+				case twelve:  trap(); break;
+				case sixteen: return 16;
+				default:      trap(); break;
+			} break;
+		case sixteen:
+			switch(out)
+			{
+				case none:    return  3;
+				case six:     return 17;
+				case nine:    return 18;
+				case twelve:  return 19;
+				case sixteen: trap(); break;
+				default:      trap(); break;
+			} break;
+		default: trap();
+	}
+
+	trap();
+	return -1;
+}
 
 
 #endif /* CITY_H_ */

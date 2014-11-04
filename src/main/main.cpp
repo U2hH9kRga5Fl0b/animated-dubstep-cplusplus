@@ -17,7 +17,9 @@ int main(int argc, char **argv)
 
 	// there is still a bug with the nearest one...
 	srand(5000007);
+
 	parse_args(argc, argv);
+
 	solve();
 	std::cout << "done" << std::endl;
 }

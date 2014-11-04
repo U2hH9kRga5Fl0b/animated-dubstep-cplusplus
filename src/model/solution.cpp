@@ -529,17 +529,6 @@ void Solution::append(int driver, int stop, int action, bool still_valid)
 	}
 }
 
-void Solution::cut(int driver, int start, int stop)
-{
-	trap();
-}
-
-void Solution::paste(int driver, int index, std::vector<int> path)
-{
-	trap();
-}
-
-
 void Solution::exchange(int driver1, int begin1, int end1,
 		int driver2, int begin2, int end2)
 {
@@ -647,6 +636,29 @@ void Solution::exchange(int driver1, int begin1, int end1,
 	refresh();
 }
 
+void Solution::shift(int driver, int stop, int shift_amount)
+{
+	int len = get_number_of_stops(driver);
+	if (shift_amount < 0)
+	{
+		for (int i = stop; i < len; i++)
+		{
+			stops.at(driver, i + shift_amount) = stops.at(driver, i);
+		}
+		for (int i = len + shift_amount; i < len; i++)
+		{
+			stops.at(driver, i) = -1;
+		}
+	}
+	else if (shift_amount > 0)
+	{
+		for (int i = len-1; i >= stop; i--)
+		{
+			stops.at(driver, i + shift_amount) = stops.at(driver, i);
+		}
+	}
+}
+
 void Solution::insert_after(int driver1, int begin1, int end1, int driver2, int begin2)
 {
 	INBOUNDS(0, driver1, get_num_drivers());
@@ -742,7 +754,7 @@ void Solution::refresh()
 		stop_numbers[i] = -1;
 	}
 
-	invs.clear(c);
+	invs.clear();
 
 	int num_drivers = stops.rows();
 	for (int d = 0; d < num_drivers; d++)
@@ -790,3 +802,4 @@ void Solution::refresh()
 
 	ensure_valid();
 }
+

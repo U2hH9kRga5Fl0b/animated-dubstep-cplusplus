@@ -37,28 +37,23 @@ public:
 	Coord interpolate_location_at(int driver, int time, int *action) const;
 
 	void ensure_valid() const;
+	friend bool is_feasible(const Solution* solution);
+
 	friend std::ostream& operator<<(std::ostream& out, const Solution& sol);
 	void human_readable(std::ostream& out) const;
 
 	// operations...
 	void append(int driver, int stop, int action, bool still_valid=true);
-	void cut(int driver, int start, int stop);
-	void paste(int driver, int index, std::vector<int> path);
-
 	void exchange(int driver1, int begin1, int end1, int driver2, int begin2, int end2);
 	void insert_after(int driver1, int begin1, int end1, int driver2, int begin2);
 
-	truck_state get_in_state(int driver, int stop) const
-	{
-		return get_truck_in_state(c, get_action_index(driver, stop));
-	}
-	truck_state get_out_state(int driver, int stop) const
-	{
-		return get_truck_out_state(c, get_action_index(driver, stop));
-	}
-	friend bool is_feasible(const Solution* solution);
-
+	// does not call is_valid()...
+	void set_action(int driver, int stop, int action_index) { stops.at(driver, stop) = action_index; }
+	void shift(int driver, int stop, int shift_amount);
 	void refresh();
+
+
+	void debug_stops() { std::cout << stops << std::endl; }
 private:
 	const City* c;
 	intarray stops;

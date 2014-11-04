@@ -10,8 +10,7 @@
 
 #include "common.h"
 
-#include "model/dumpstersize.h"
-#include "model/operation.h"
+#include "model/truckstate.h"
 
 class Yard;
 class Landfill;
@@ -21,15 +20,20 @@ class Action
 public:
 	Action(int loc);
 	Action(const Landfill& l, dumpster_size s);
-	Action(const Yard& l, dumpster_size in, dumpster_size out, operation o);
+	Action(const Yard& y, truck_state in, truck_state out);
 	~Action() {}
 
+#if 0
 	operation op;
 	dumpster_size in;
 	dumpster_size out;
+#endif
+	truck_state entr_state;
+	truck_state exit_state;
+
 	int location;
 	long begin_time;
-	long   end_time;
+	long end_time;
 	long wait_time;
 	bool accessible[3];
 	int value;

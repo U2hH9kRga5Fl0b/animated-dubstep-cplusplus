@@ -7,7 +7,7 @@
 
 #include "seed/seed.h"
 
-Solution* get_random_solution(const City* c)
+Solution* get_random_solution_dfs(const City* c)
 {
 	Solution* sol = new Solution { c, c->num_actions };
 

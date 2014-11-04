@@ -81,8 +81,8 @@ bool backtrack(stuff& stuff)
 		// need to check inventories...
 
 		if (		stuff.cdepth >= 0 &&
-				stuff.city->get_action(stuff.cinters[stuff.cdepth]).op == Unstore &&
-				stuff.city->get_action(poss).op == Store &&
+				stuff.city->is_staging_area(stuff.cinters[stuff.cdepth]) &&
+				stuff.city->is_staging_area(poss) &&
 				stuff.city->get_action(stuff.cinters[stuff.cdepth]).location == stuff.city->get_action(poss).location
 			)
 		{

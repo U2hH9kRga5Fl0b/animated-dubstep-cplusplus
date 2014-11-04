@@ -18,7 +18,7 @@ struct ends
 {
 	bool operator()(const City* city, int action)
 	{
-		return get_truck_out_state(city, action) == TRUCK_STATE_NONE;
+		return city->get_action(action).exit_state == TRUCK_STATE_NONE;
 	}
 };
 
@@ -26,7 +26,7 @@ struct begins
 {
 	bool operator()(const City* city, int action)
 	{
-		return get_truck_in_state(city, action) == TRUCK_STATE_NONE;
+		return city->get_action(action).entr_state == TRUCK_STATE_NONE;
 	}
 };
 

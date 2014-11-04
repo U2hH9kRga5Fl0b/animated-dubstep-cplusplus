@@ -11,7 +11,7 @@
 
 void make_video()
 {
-	Solution* sol = get_nearest_seed(city);
+	Solution* sol = get_nearest_seed_dfs(city);
 
 	cvvizualizer v { "foobar" };
 	v.show(sol);

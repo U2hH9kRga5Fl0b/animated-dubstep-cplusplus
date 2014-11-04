@@ -19,13 +19,14 @@ public:
 	InventoryTimeline(const City* city);
 	~InventoryTimeline();
 
-	void clear(const City* original);
+	void clear();
 	void action_performed(int driver, int stop, int time, const Action* action);
 
 	bool in_capacity() const;
 
 	friend std::ostream& operator<<(std::ostream& out, const InventoryTimeline& line);
 private:
+	const City* city;
 	// std::map<int, inventory> timeline;
 	void* timeline;
 };

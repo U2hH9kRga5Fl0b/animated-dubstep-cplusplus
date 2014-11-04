@@ -24,5 +24,6 @@ void generate_seed();
 void make_video();
 void ensure_feasible();
 void solve();
+void show_path();
 
 #endif /* ARGUMENTS_HPP_ */

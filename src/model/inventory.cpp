@@ -48,19 +48,27 @@ public:
 			return;
 		}
 
-		if (a->op == Store)
+		switch(a->entr_state & TRUCK_SIZE_MASK)
 		{
-			(*this)[a->in] += (reverse?-1:1);
-
+			case none   : trap();                         break;
+			case six    : inventory[0] += (reverse?-1:1); break;
+			case nine   : inventory[1] += (reverse?-1:1); break;
+			case twelve : inventory[2] += (reverse?-1:1); break;
+			case sixteen: inventory[3] += (reverse?-1:1); break;
+			default:
+				err() << "truck state:" << a->exit_state << std::endl;
+				trap();
 		}
-		else if (a->op == Unstore)
+		switch(a->exit_state & TRUCK_SIZE_MASK)
 		{
-			(*this)[a->out] -= (reverse?-1:1);;
-		}
-		else
-		{
-			std::cerr << "Wrong type of operation: " << a->op << std::endl;
-			trap();
+			case none   : trap();                         break;
+			case six    : inventory[0] -= (reverse?-1:1); break;
+			case nine   : inventory[1] -= (reverse?-1:1); break;
+			case twelve : inventory[2] -= (reverse?-1:1); break;
+			case sixteen: inventory[3] -= (reverse?-1:1); break;
+			default:
+				err() << "truck state: " << a->exit_state << std::endl;
+				trap();
 		}
 	}
 
@@ -221,7 +229,8 @@ private:
 	int ndx;
 };
 
-InventoryTimeline::InventoryTimeline(const City* city) :
+InventoryTimeline::InventoryTimeline(const City* city_) :
+	city{city_},
 	timeline{new std::map<int, inventory*>}
 {
 	std::map<int, inventory*>* tl = (std::map<int, inventory*>*) timeline;
@@ -235,7 +244,7 @@ InventoryTimeline::~InventoryTimeline()
 	delete tl;
 }
 
-void InventoryTimeline::clear(const City* city)
+void InventoryTimeline::clear()
 {
 	auto tl = (std::map<int, inventory*>*) timeline;
 	std::for_each(tl->begin(), tl->end(), [](const std::pair<int, inventory*>& p) { delete p.second; });
@@ -249,10 +258,16 @@ void InventoryTimeline::action_performed(int driver, int stop, int time, const A
 	{
 		return;
 	}
-	if (action->op != Unstore && action->op != Store)
+	if (action->location < city->num_landfills || action->location >= city->num_stagingareas + city->num_landfills)
 	{
 		return;
 	}
+
+	if (DEBUG && ((action->exit_state & TRUCK_STATE_FULL) || (action->entr_state & TRUCK_STATE_FULL)))
+	{
+		trap();
+	}
+
 	std::map<int, inventory*>* tl = (std::map<int, inventory*>*) timeline;
 
 	auto it = tl->lower_bound(time);

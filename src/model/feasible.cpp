@@ -27,7 +27,7 @@ bool is_feasible(const Solution* solution)
 	{
 		int len = solution->get_number_of_stops(d);
 		int action = solution->get_action_index(d, len-1);
-		if (get_truck_out_state(solution->c, action) != TRUCK_STATE_NONE)
+		if (solution->c->get_action(action).exit_state != TRUCK_STATE_NONE)
 		{
 			err() << "bad ending state" << std::endl;
 			trap();
