@@ -38,7 +38,9 @@ do                                                                              
 #define STAGING_AREAS_GO_WITH_LANDFILLS 0
 
 
-
+#define TIME_FOR_STAGING_AREA    (( 5 + rand() %  1)*60)
+#define TIME_FOR_LANDFILL        ((30 + rand() % 30)*60)
+#define TIME_FOR_REQUEST         (( 5 + rand() %  1)*60)
 
 
 

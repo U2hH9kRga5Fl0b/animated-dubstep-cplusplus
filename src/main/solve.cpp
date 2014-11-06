@@ -17,6 +17,10 @@ void solve()
 {
 //	log() << *sol << std::endl;
 
+
+	void do_something(City* city);
+	do_something(city);
+
 	for (int i = 0; i < 1; i++)
 	{
 		Solution* sol = get_random_solution_find(city);

@@ -20,6 +20,8 @@ int main(int argc, char **argv)
 
 	parse_args(argc, argv);
 
+//	void show_path();
+//	show_path();
 	solve();
 	std::cout << "done" << std::endl;
 }

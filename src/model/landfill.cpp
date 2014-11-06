@@ -6,11 +6,9 @@
  */
 
 #include "model/landfill.h"
+#include "common.h"
 
 #include <cstdlib>
 
-#define HALF_HOUR (30 * 60)
-
-
-Landfill::Landfill(int loc) : waittime{HALF_HOUR + rand() % HALF_HOUR}, location{loc} {}
+Landfill::Landfill(int loc) : waittime{TIME_FOR_LANDFILL}, location{loc} {}
 Landfill::~Landfill() {}

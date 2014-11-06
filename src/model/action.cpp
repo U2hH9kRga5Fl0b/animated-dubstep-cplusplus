@@ -32,10 +32,11 @@ Action::Action(int loc) :
 	begin_time{0},
 	end_time {TIME_IN_A_DAY},
 #endif
-	wait_time{10 * 60},
+	wait_time{TIME_FOR_REQUEST},
 	value{1}
 {
-	if (!(rand() % 10))
+	// temporarily disable replaces...
+	if (0 && !(rand() % 10))
 	{
 		// replace
 		entr_state |= TRUCK_STATE_EMPTY;
@@ -82,7 +83,7 @@ Action::Action(const Yard& y, truck_state in, truck_state out) :
 	location{y.location},
 	begin_time{0},
 	end_time {TIME_IN_A_DAY},
-	wait_time{15 * 60},
+	wait_time{TIME_FOR_STAGING_AREA},
 	value{0}
 {
 	accessible[0] = accessible[1] = accessible[2] = true;
