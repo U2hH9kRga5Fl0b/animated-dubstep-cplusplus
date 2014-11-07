@@ -11,6 +11,8 @@
 #include "opts/codon.h"
 #include "opts/requests_exchange.h"
 
+#include "insight/algo.h"
+
 #include <sstream>
 
 void solve()
@@ -18,8 +20,9 @@ void solve()
 //	log() << *sol << std::endl;
 
 
-	void do_something(City* city);
-	do_something(city);
+	Solution* ins = do_something(city);
+	viewer.show("insight seed", ins);
+	viewer.pause(0);
 
 	for (int i = 0; i < 1; i++)
 	{

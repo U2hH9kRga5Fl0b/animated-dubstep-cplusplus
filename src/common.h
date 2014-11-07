@@ -35,7 +35,7 @@ do                                                                              
 
 
 #define TIME_IN_A_DAY (60*60*12 * 5)
-#define STAGING_AREAS_GO_WITH_LANDFILLS 0
+#define STAGING_AREAS_GO_WITH_LANDFILLS 1
 
 
 #define TIME_FOR_STAGING_AREA    (( 5 + rand() %  1)*60)

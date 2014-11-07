@@ -20,7 +20,7 @@ class intarray
 public:
 	intarray(int m_, int n_) : m{m_}, n{n_}, elems{new int[m * n]} { INBOUNDS(0,m,INT_MAX); INBOUNDS(0,n,INT_MAX);  }
 	intarray(int n_) : intarray {n_, n_} {}
-	~intarray() { delete elems; }
+	~intarray() { delete[] elems; }
 
 	inline int rows() const { return m; }
 	inline int cols() const { return n; }
@@ -110,6 +110,26 @@ public:
 			o << std::endl;
 		}
 		return o;
+	}
+
+	int sum_row(int r) const
+	{
+		int ret = 0;
+		for (int i = 0; i < cols(); i++)
+		{
+			ret += at(r, i);
+		}
+		return ret;
+	}
+
+	int sum_col(int c) const
+	{
+		int ret = 0;
+		for (int i = 0; i < rows(); i++)
+		{
+			ret += at(i, c);
+		}
+		return ret;
 	}
 private:
 	int m, n;

@@ -250,7 +250,7 @@ void Solution::ensure_valid() const
 		}
 	}
 
-	delete counts;
+	delete[] counts;
 
 	// verify the times...
 	for (int d = 0; d < num_drivers; d++)

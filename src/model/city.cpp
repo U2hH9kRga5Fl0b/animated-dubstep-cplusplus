@@ -10,6 +10,8 @@
 #include "model/landfill.h"
 #include "main/gen_points.h"
 
+#include "model/picture_bounds.h"
+
 #include <cstdlib>
 #include <cmath>
 #include <sstream>
@@ -139,6 +141,7 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	first_request_index     = first_stagingarea_index + num_stagingareas * NUM_ACTIONS_PER_YARD;
 
 	start_location = first_stagingarea_index;
+	start_yard = 0;
 
 	sentinal_action.entr_state = TRUCK_STATE_NONE;
 	sentinal_action.exit_state = TRUCK_STATE_NONE;
@@ -148,6 +151,34 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	sentinal_action.wait_time  = 0;
 	sentinal_action.value = 0;
 	sentinal_action.accessible[0] = sentinal_action.accessible[1] = sentinal_action.accessible[2] = 1;
+
+
+	xmin = ymin =  DBL_MAX;
+	xmax = ymax = -DBL_MAX;
+	for (int i = 0; i < num_locations; i++)
+	{
+		if (coords[i].x < xmin)
+		{
+			xmin = coords[i].x;
+		}
+		if (coords[i].x > xmax)
+		{
+			xmax = coords[i].x;
+		}
+		if (coords[i].y < ymin)
+		{
+			ymin = coords[i].y;
+		}
+		if (coords[i].y > ymax)
+		{
+			ymax = coords[i].y;
+		}
+	}
+
+	DECREASE(xmin);
+	DECREASE(ymin);
+	INCREASE(xmax);
+	INCREASE(ymax);
 }
 
 City::~City()

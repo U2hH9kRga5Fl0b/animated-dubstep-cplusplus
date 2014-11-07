@@ -52,6 +52,7 @@ pairing_info::pairing_info(const City* city_, int d, int p, int npts) :
 			num_delivers{d},
 			deliver_actions{new int[d]},
 			deliver_depots {d , npts},
+			depot_2_depot{npts, npts},
 			d2p{d, p} {}
 
 pairing_info::~pairing_info()
@@ -84,13 +85,6 @@ pairing_info* new_pairing_info(const City* city)
 			{return (city->get_action(p1).exit_state & TRUCK_SIZE_MASK) < (city->get_action(p2).exit_state & TRUCK_SIZE_MASK); });
 	std::sort(&ret->deliver_actions[0], &ret->deliver_actions[ret->num_delivers], [city](const int d1, const int d2)
 			{return (city->get_action(d1).entr_state & TRUCK_SIZE_MASK) < (city->get_action(d2).entr_state & TRUCK_SIZE_MASK); });
-
-
-
-	for (int i = 0; i < ret->num_delivers; i++)
-	{
-		std::cout << i << ": " << city->get_action(ret->deliver_actions[i]) << std::endl;
-	}
 
 
 	for (int i = 0; i < ret->num_delivers; i++)
@@ -132,13 +126,9 @@ pairing_info* new_pairing_info(const City* city)
 				aftr_dpt_cmp{city, city->get_action(ret->pickup_actions[i]).location});
 	}
 
-#if 0
-	std::cout << ret->pickup_depots;
-	std::cout << "the distance for 0 is " << city->durations.at(city->get_action(ret->pickup_actions[1]).location, city->yards.at(ret->pickup_depots.at(1, 0)).location) << std::endl;
-	std::cout << "the distance for 1 is " << city->durations.at(city->get_action(ret->pickup_actions[1]).location, city->yards.at(ret->pickup_depots.at(1, 1)).location) << std::endl;
-	std::cout << "the distance for 2 is " << city->durations.at(city->get_action(ret->pickup_actions[1]).location, city->yards.at(ret->pickup_depots.at(1, 2)).location) << std::endl;
-	std::cout << "the distance for 3 is " << city->durations.at(city->get_action(ret->pickup_actions[1]).location, city->yards.at(ret->pickup_depots.at(1, 3)).location) << std::endl;
-#endif
+	for (int i = 0; i < city->num_stagingareas; i++)
+		for (int j = 0; j < city->num_stagingareas; j++)
+			ret->depot_2_depot.at(i, j) = city->durations.at(city->yards.at(i).location, city->yards.at(j).location);
 
 	return ret;
 }

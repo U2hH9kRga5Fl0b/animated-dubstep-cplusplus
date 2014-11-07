@@ -26,40 +26,6 @@
 #include <chrono>
 #include <mutex>
 
-
-
-#define INCREASE(x)                      \
-do {                                     \
-	if ((x) == 0.0)                  \
-	{                                \
-		x = 1;                   \
-	}                                \
-	else if ((x) < 0.0)              \
-	{                                \
-		x = .9 * x;              \
-	}                                \
-	else                             \
-	{                                \
-		x = 1.1 * x;             \
-	}                                \
-} while(0)
-
-#define DECREASE(x)                      \
-do {                                     \
-	if ((x) == 0.0)                  \
-	{                                \
-		x = 1;                   \
-	}                                \
-	else if ((x) < 0.0)              \
-	{                                \
-		x = 1.1 * x;             \
-	}                                \
-	else                             \
-	{                                \
-		x = .9 * x;              \
-	}                                \
-} while(0)
-
 namespace
 {
 	std::mutex graphics_mutex;
@@ -118,31 +84,6 @@ namespace
 		return (state*) viz;
 	}
 
-	void get_bounds(const City* c, double&xmin, double&xmax, double&ymin, double&ymax)
-	{
-		xmin = ymin =  DBL_MAX;
-		xmax = ymax = -DBL_MAX;
-		for (int i = 0; i < c->num_locations; i++)
-		{
-			if (c->coords[i].x < xmin)
-			{
-				xmin = c->coords[i].x;
-			}
-			if (c->coords[i].x > xmax)
-			{
-				xmax = c->coords[i].x;
-			}
-			if (c->coords[i].y < ymin)
-			{
-				ymin = c->coords[i].y;
-			}
-			if (c->coords[i].y > ymax)
-			{
-				ymax = c->coords[i].y;
-			}
-		}
-	}
-
 	void clear_mat(state* istate)
 	{
 #if USE_BACKGROUND_IMAGE
@@ -154,12 +95,10 @@ namespace
 
 	void print_sol_to_mat(const Solution* sol, state* istate)
 	{
-		double minx, miny, maxx, maxy;
-		get_bounds(sol->get_city(), minx, maxx, miny, maxy);
-		DECREASE(minx);
-		DECREASE(miny);
-		INCREASE(maxx);
-		INCREASE(maxy);
+		const double minx = sol->get_city()->xmin;
+		const double miny = sol->get_city()->ymin;
+		const double maxx = sol->get_city()->xmax;
+		const double maxy = sol->get_city()->ymax;
 
 		// std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count()
 
@@ -221,12 +160,10 @@ namespace
 
 	void print_city_to_mat(const City* c, state* istate)
 	{
-		double minx, miny, maxx, maxy;
-		get_bounds(c, minx, maxx, miny, maxy);
-		DECREASE(minx);
-		DECREASE(miny);
-		INCREASE(maxx);
-		INCREASE(maxy);
+		const double minx = c->xmin;
+		const double miny = c->ymin;
+		const double maxx = c->xmax;
+		const double maxy = c->ymax;
 
 		cv::Scalar& color = istate->get_color(0);
 
@@ -246,12 +183,10 @@ namespace
 
 	void write_trucks_to_mat(const Solution* sol, const Coord* coords, int *actions, int time, state* istate)
 	{
-		double minx, miny, maxx, maxy;
-		get_bounds(sol->get_city(), minx, maxx, miny, maxy);
-		DECREASE(minx);
-		DECREASE(miny);
-		INCREASE(maxx);
-		INCREASE(maxy);
+		const double minx = sol->get_city()->xmin;
+		const double miny = sol->get_city()->ymin;
+		const double maxx = sol->get_city()->xmax;
+		const double maxy = sol->get_city()->ymax;
 
 		for (int driver = 0; driver < sol->get_num_drivers(); driver++)
 		{

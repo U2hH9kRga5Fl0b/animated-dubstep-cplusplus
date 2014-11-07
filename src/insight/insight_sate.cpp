@@ -7,6 +7,9 @@
 
 #include "insight/insight_state.h"
 
+
+#include "insight/insight_viewer.h"
+
 insight_state::insight_state(const pairing_info* info_) :
 	info{info_},
 	deliver_depots {new int[info->num_delivers]},
@@ -30,33 +33,90 @@ insight_state::~insight_state()
 
 void insight_state::fast_match()
 {
-	if (0)
+	bool *already_pickedup = new bool[info->num_pickups];
+	bool *already_delivered = new bool[info->num_delivers];
+
+	for (int i = 0; i < info->num_pickups; i++)
+		already_pickedup[i] = false;
+	for (int i = 0; i < info->num_delivers; i++)
+		already_delivered[i] = false;
+	for (int i = 0; i < info->num_delivers; i++)
+		delivers_to_pickups[i] = -1;
+
+	// pick the shortest first
+	for (int i = 0; i < 4; i++)
 	{
-		// pick the shortest first
 		for (int i = 0; i < 4; i++)
 		{
-			bool *already_pickedup = new bool[info->num_pickups];
-			for (int i = 0; i < info->num_pickups; i++)
-				already_pickedup[i] = false;
+			int dbegin = info->first_deliver_of_size[i];
+			int dend = i == 3 ? info->num_delivers : info->first_deliver_of_size[i + 1];
+			int pbegin = info->first_pickup_of_size[i];
+			int pend = i == 3 ? info->num_pickups : info->first_pickup_of_size[i + 1];
 
-			for (int i = 0; i < 4; i++)
+			while (true)
 			{
-				int dbegin = info->first_deliver_of_size[i];
-				int dend   = i==3 ? info->num_delivers : info->first_deliver_of_size[i+1];
-				int pbegin = info->first_pickup_of_size[i];
-				int pend   = i==3 ? info->num_pickups : info->first_pickup_of_size[i+1];
+				int di, pi, imp;
 
-#if 0
+				di = pi = -1;
+				imp = INT_MAX;
+
 				for (int d = dbegin; d < dend; d++)
+				{
+					if (already_delivered[d])
+					{
+						continue;
+					}
+					int da = info->deliver_actions[d];
+					int dloc = info->city->get_action(da).location;
+					int dd = false ? deliver_depots[d] : info->deliver_depots.at(d, 0);
+					int ddloc = info->city->yards.at(dd).location;
 					for (int p = pbegin; p < pend; p++)
-#endif
+					{
+						if (already_pickedup[p])
+						{
+							continue;
+						}
+						int pick = info->pickup_actions[p];
+						int ploc = info->city->get_action(pick).location;
+						int pd = false ? pickup_depots[p] : info->pickup_depots.at(p, 0);
+						int pdloc = info->city->yards.at(pd).location;
 
+						int paired_distance = info->city->durations.at(dloc, ploc);
+						int separt_distance = info->city->durations.at(dloc, ddloc) + info->city->durations.at(ploc, pdloc);
+
+						int nextpairing_cost = paired_distance - separt_distance;
+
+						if (nextpairing_cost >= imp)
+						{
+							continue;
+						}
+						imp = nextpairing_cost;
+						di = d;
+						pi = p;
+					}
+				}
+
+				if (imp >= 0)
+				{
+					break;
+				}
+				delivers_to_pickups[di] = pi;
+				already_delivered[di] = true;
+				already_pickedup[pi] = true;
+//				show_insight("foobar", this);
 			}
-			delete[] already_pickedup;
 		}
 	}
-	else
-	{
+	delete[] already_pickedup;
+	delete[] already_delivered;
+}
+
+
+#if 0
+
+This is an alternative fast_match that is even faster, less quality, and not debugged.
+However, it used to compile when I wrote it! :)
+
 		int starts[4] = {info->first_deliver_of_size[0],
 				info->first_deliver_of_size[1],
 				info->first_deliver_of_size[2],
@@ -109,5 +169,5 @@ void insight_state::fast_match()
 		}
 
 		delete[] already_pickedup;
-	}
-}
+
+#endif

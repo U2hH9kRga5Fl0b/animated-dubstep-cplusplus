@@ -24,6 +24,7 @@ extern Action sentinal_action;
 #define NUM_ACTIONS_PER_FILL  4
 
 inline int get_matching_staging_area_index(dumpster_size in, dumpster_size out);
+inline int get_matching_landfill_index(dumpster_size s);
 
 class City
 {
@@ -102,9 +103,13 @@ public:
 				get_action(action).accessible[trucks[driverno]];
 	}
 
-	inline int get_staging_area_index(int staging_area, dumpster_size in, dumpster_size out)
+	inline int get_staging_area_index(int staging_area, dumpster_size in, dumpster_size out) const
 	{
-		return first_stagingarea_index + 20 * staging_area + get_matching_staging_area_index(in, out);
+		return first_stagingarea_index + NUM_ACTIONS_PER_YARD * staging_area + get_matching_staging_area_index(in, out);
+	}
+	inline int get_landfill_index(int fill, dumpster_size size) const
+	{
+		return first_landfill_index + NUM_ACTIONS_PER_FILL * fill + get_matching_landfill_index(size);
 	}
 
 	std::string get_decription(int location) const;
@@ -117,6 +122,7 @@ public:
 	int num_trucks;
 
 	int start_location;
+	int start_yard;
 
 	intarray durations;
 	intarray possibles;
@@ -131,6 +137,7 @@ public:
 
 	friend std::ostream& operator<<(std::ostream& out, const City& a);
 
+	double xmax, ymax, xmin, ymin;
 private:
 	const Action *actions;
 	std::vector<Action> donttouch;
@@ -232,6 +239,7 @@ inline int get_matching_staging_area_index(dumpster_size in, dumpster_size out)
 	trap();
 	return -1;
 }
+
 
 
 #endif /* CITY_H_ */

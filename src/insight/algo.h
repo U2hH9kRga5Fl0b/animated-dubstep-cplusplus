@@ -8,8 +8,8 @@
 #ifndef ALGO_H_
 #define ALGO_H_
 
-#include "model/city.h"
+#include "model/solution.h"
 
-void do_something(City* city);
+Solution* do_something(City* city);
 
 #endif /* ALGO_H_ */

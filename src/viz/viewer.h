@@ -31,4 +31,6 @@ private:
 	bool on;
 };
 
+void get_city_bounds(const City* c, double&xmin, double&xmax, double&ymin, double&ymax);
+
 #endif /* VIEWER_H_ */

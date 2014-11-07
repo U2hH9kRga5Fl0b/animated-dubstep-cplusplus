@@ -28,6 +28,8 @@ public:
 	int first_deliver_of_size[4];
 	intarray deliver_depots;
 
+	intarray depot_2_depot;
+
 	intarray d2p;
 
 
