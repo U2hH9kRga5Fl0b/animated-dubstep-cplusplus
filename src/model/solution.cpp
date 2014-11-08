@@ -106,7 +106,7 @@ int Solution::get_time_for_driver(int driver) const
 	}
 	int la = stops.at(driver, lens[driver]-1);
 	int lat = times.at(driver, lens[driver]-1);
-	int time_to_fin = c->durations.at(c->get_action(la).location, c->start_location);
+	int time_to_fin = c->durations.at(c->get_action(la).location, c->start_coord_index);
 	return lat + time_to_fin;
 }
 
@@ -170,6 +170,19 @@ void Solution::ensure_valid() const
 			int stop = stops.at(d, s);
 			if (s < len)
 			{
+				if (s > 0 && c->get_action(stops.at(d, s-1)).exit_state != c->get_action(stop).entr_state)
+				{
+					err() << "Truck states did not match!" << std::endl;
+					human_readable(err());
+					trap();
+				}
+				if (stops.at(d, s+1) >= 0 && c->get_action(stop).exit_state != c->get_action(stops.at(d, s+1)).entr_state)
+				{
+					err() << "Truck states did not match!" << std::endl;
+					human_readable(err());
+					trap();
+				}
+
 				if (stop < 0)
 				{
 					std::cerr << (*this) << std::endl;
@@ -328,6 +341,11 @@ std::ostream& operator<<(std::ostream& out, const Solution& sol)
 		for (int i = 0; i < sol.times.rows(); i++)
 		{
 			out << std::setw(5) << sol.get_time_for_driver(i) << ": ";
+			if (sol.stops.at(i, 0) < 0)
+			{
+				out << std::endl;
+				continue;
+			}
 			out << std::setw(5) << sol.c->get_time_to(START_ACTION_INDEX, sol.stops.at(i, 0));
 			for (int j = 0; j < sol.lens[i]-1; j++)
 			{
@@ -362,18 +380,18 @@ Coord Solution::interpolate_location_at(int driver, int time, int *action) const
 
 	if (lens[driver] <= 0)
 	{
-		return c->coords[c->start_location];
+		return c->coords[c->start_coord_index];
 	}
 
 	if (time < times.at(driver, 0))
 	{
 		ftime = 0;
-		mtime = c->durations.at(c->start_location, c->get_action(stops.at(driver, 0)).location);
+		mtime = c->durations.at(c->start_coord_index, c->get_action(stops.at(driver, 0)).location);
 		ltime = mtime + c->get_action(stops.at(driver, 0)).wait_time;
 		pac = -1;
 		nac = stops.at(driver, 0);
 
-		prevloc = c->start_location;
+		prevloc = c->start_coord_index;
 		nextloc = c->get_action(stops.at(driver, 0)).location;
 	}
 	else if (time >= times.at(driver, lens[driver]-1))
@@ -383,7 +401,7 @@ Coord Solution::interpolate_location_at(int driver, int time, int *action) const
 		ltime = INT_MAX-1;
 
 		prevloc = c->get_action(stops.at(driver, lens[driver] - 1)).location;
-		nextloc = c->start_location;
+		nextloc = c->start_coord_index;
 
 		pac = stops.at(driver, lens[driver]-1);
 		nac = -1;
@@ -437,7 +455,7 @@ void Solution::human_readable(std::ostream& out) const
 		int len = get_number_of_stops(d);
 		out << "\tlength: " << len << std::endl;
 
-		int prevloc = c->start_location;
+		int prevloc = c->start_coord_index;
 
 		int t=0;
 		for (int s = 0; s < len; s++)

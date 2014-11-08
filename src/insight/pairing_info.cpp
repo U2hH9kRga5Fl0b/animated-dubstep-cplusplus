@@ -130,5 +130,19 @@ pairing_info* new_pairing_info(const City* city)
 		for (int j = 0; j < city->num_stagingareas; j++)
 			ret->depot_2_depot.at(i, j) = city->durations.at(city->yards.at(i).location, city->yards.at(j).location);
 
+#if 0
+	std::cout << "yards: " << std::endl;
+	for (int i = 0; i < city->num_stagingareas; i++)
+	{
+		std::cout << city->coords[city->yards.at(i).location] << std::endl;
+	}
+
+	std::cout << "fills: " << std::endl;
+	for (int i = 0; i < city->num_landfills; i++)
+	{
+		std::cout << city->coords[city->get_action(i * NUM_ACTIONS_PER_FILL).location] << std::endl;
+	}
+#endif
+
 	return ret;
 }

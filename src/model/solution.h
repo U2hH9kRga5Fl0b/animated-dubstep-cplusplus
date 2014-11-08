@@ -52,7 +52,6 @@ public:
 	void shift(int driver, int stop, int shift_amount);
 	void refresh();
 
-
 	void debug_stops() { std::cout << stops << std::endl; }
 private:
 	const City* c;

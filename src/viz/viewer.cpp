@@ -84,7 +84,8 @@ void Viewer::snapshot(const std::string& name, const Solution* sol, const std::s
 		it = cvs.find(name);
 	}
 
-	trap();
+	it->second->show(sol);
+	it->second->snapshot(filename);
 }
 
 void Viewer::snapshot(const std::string& name, const City* c, const std::string& filename)
@@ -111,5 +112,5 @@ void Viewer::status(const std::string& status)
 #include <opencv/highgui.h>
 void Viewer::pause(int length)
 {
-	cv::waitKey(0);
+	cv::waitKey(length);
 }

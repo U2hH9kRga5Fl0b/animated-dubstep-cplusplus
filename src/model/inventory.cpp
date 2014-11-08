@@ -297,7 +297,7 @@ std::ostream& operator<<(std::ostream& out, const InventoryTimeline& line)
 {
 	if (!ENFORCE_INVENTORIES)
 	{
-		return out;
+		return out << "\t[Currently disabled]\n";
 	}
 	std::map<int, inventory*>* tl = (std::map<int, inventory*>*) line.timeline;
 	auto end = tl->end();

@@ -10,8 +10,9 @@
 
 #include "insight/insight_state.h"
 
+void show_insight(const std::string& name, const insight_state* state, void *video, const std::string& file="");
 
-void show_insight(const std::string& name, const insight_state* state);
-
+void *create_video();
+void destroy_video(void *video);
 
 #endif /* INSIGHT_VIEWER_H_ */

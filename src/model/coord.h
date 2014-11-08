@@ -8,6 +8,9 @@
 #ifndef COORD_H_
 #define COORD_H_
 
+#include <iostream>
+#include <iomanip>
+
 class Coord
 {
 public:
@@ -17,6 +20,11 @@ public:
 	~Coord();
 	double dist(const Coord& other) const;
 	double x, y;
+
+	friend std::ostream& operator<<(std::ostream& out, const Coord& c)
+	{
+		return out << std::setw(10) << c.x << ", " << std::setw(10) << c.y;
+	}
 };
 
 #endif /* COORD_H_ */

@@ -16,6 +16,33 @@
 #define default_width  500
 
 
+namespace
+{
+class video_state
+{
+public:
+	int rows;
+	int cols;
+	cv::VideoWriter vid;
+
+	video_state() :
+		rows{1000},
+		cols{1000},
+		vid { "output/pairing.mpeg", CV_FOURCC('P', 'I', 'M', '1'), 1, cv::Size(rows, cols) } {}
+};
+
+}
+
+
+void *create_video()
+{
+	return new video_state;
+}
+
+void destroy_video(void *video)
+{
+	delete (video_state *)video;
+}
 
 
 
@@ -63,16 +90,17 @@ void draw_line(cv::Mat& canvas, const City *city, int begin_location, int end_lo
 
 }
 
-void show_insight(const std::string& name, const insight_state* state)
+void show_insight(const std::string& name, const insight_state* state, void *vid, const std::string& file)
 {
 	const City* city = state->info->city;
 
-	cv::Mat canvas = cv::Mat::zeros(default_height, default_width, CV_8UC3);
+	video_state* video = (video_state*) vid;
+	cv::Mat canvas = cv::Mat::zeros(video->rows, video->cols, CV_8UC3);
 
 	if (!init)
 	{
 		cvNamedWindow(name.c_str(), CV_WINDOW_AUTOSIZE);
-		cvMoveWindow(name.c_str(), 100,100);
+		cvMoveWindow(name.c_str(), video->cols, video->rows);
 		init = true;
 	}
 
@@ -112,7 +140,14 @@ void show_insight(const std::string& name, const insight_state* state)
 		draw_line(canvas, city, dloc, ploc, cv::Scalar { 0, 0, 255 }, "");
 	}
 
+	for (int i=0;i<100;i++)
+		video->vid.write(canvas);
+	if (file.size() != 0)
+	{
+		cv::imwrite("output/" + file + ".png", canvas);
+	}
+
 	cv::imshow(name, canvas);
-	cv::waitKey(500);
+	cv::waitKey(100);
 }
 

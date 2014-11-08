@@ -21,7 +21,8 @@ namespace
 	}
 }
 
-Action::Action(int loc) :
+Action::Action(int loc, int idx_) :
+	idx{idx_},
 	entr_state{0},
 	exit_state{0},
 	location{loc},
@@ -65,7 +66,8 @@ Action::Action(int loc) :
 	}
 }
 
-Action::Action(const Landfill& l, dumpster_size s) :
+Action::Action(const Landfill& l, dumpster_size s, int idx_) :
+	idx{idx_},
 	entr_state{TRUCK_STATE_FULL  | s},
 	exit_state{TRUCK_STATE_EMPTY | s},
 	location{l.location},
@@ -77,7 +79,8 @@ Action::Action(const Landfill& l, dumpster_size s) :
 	accessible[0] = accessible[1] = accessible[2] = true;
 }
 
-Action::Action(const Yard& y, truck_state in, truck_state out) :
+Action::Action(const Yard& y, truck_state in, truck_state out, int idx_) :
+	idx{idx_},
 	entr_state{in},
 	exit_state{out},
 	location{y.location},
@@ -94,11 +97,12 @@ Action::Action(const Yard& y, truck_state in, truck_state out) :
 std::ostream& operator<<(std::ostream& out, const Action& a)
 {
 	return out
-	    << '[' << get_truck_state_desc(a.entr_state) << ']'
-	    << '[' << get_truck_state_desc(a.exit_state) << ']'
-	    << '[' << std::setw(3) << a.location << ']'
-	    << '[' << std::setw(5) << a.begin_time << '-' << std::setw(5) << a.end_time << ']'
-	    << '[' << std::setw(4) << a.wait_time << ']'
-	    << '[' << a.value << ']'
-	    << '[' << ac(0) << ac(1) << ac(2) << ']';
+	    << "[" << "enter:" << get_truck_state_desc(a.entr_state)                                 << ']'
+	    << "[" << "exit:" << get_truck_state_desc(a.exit_state)                                  << ']'
+	    << "[" << "loc: " << std::setw(3) << a.location                                          << ']'
+	    << "[" << "window:" << std::setw(5) << a.begin_time << '-' << std::setw(5) << a.end_time << ']'
+	    << "[" << "time:" << std::setw(4) << a.wait_time                                         << ']'
+	    << "[" << "is req:" << a.value                                                          << ']'
+	    << "[" << "ndx:" << std::setw(3) << a.idx                                                << ']'
+	    << "[" << "trucks:" << ac(0) << ac(1) << ac(2)                                           << ']';
 }

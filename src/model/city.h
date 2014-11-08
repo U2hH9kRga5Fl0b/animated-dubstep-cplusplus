@@ -35,7 +35,7 @@ public:
 	inline int get_start_time(int first_action) const
 	{
 		INBOUNDS(0, first_action, num_actions);
-		return durations.at(start_location, actions[first_action].location) + actions[first_action].wait_time;
+		return durations.at(start_coord_index, actions[first_action].location) + actions[first_action].wait_time;
 	}
 
 	inline int get_time_to(int from, int to) const
@@ -45,7 +45,7 @@ public:
 		int to_loc;
 		if (from == START_ACTION_INDEX)
 		{
-			from_loc = start_location;
+			from_loc = start_coord_index;
 		}
 		else
 		{
@@ -54,7 +54,7 @@ public:
 		}
 		if (to == END_ACTION_INDEX)
 		{
-			to_loc = start_location;
+			to_loc = start_coord_index;
 		}
 		else
 		{
@@ -121,8 +121,8 @@ public:
 	int num_locations;
 	int num_trucks;
 
-	int start_location;
-	int start_yard;
+	int start_coord_index;
+	int start_staging_area;
 
 	intarray durations;
 	intarray possibles;

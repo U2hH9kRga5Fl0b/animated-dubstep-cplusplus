@@ -7,6 +7,8 @@
 
 #include "insight/assignment.h"
 
+#include "main/global.h"
+
 namespace
 {
 	class subpath_collection
@@ -37,7 +39,7 @@ namespace
 				else
 				{
 					int begin_yard = state->deliver_depots[i];
-					int pickup = state->pickup_depots[pickup_index];
+					int pickup = state->info->pickup_actions[pickup_index];
 					int end_yard = state->pickup_depots[pickup_index];
 
 					interhub interh { begin_yard, end_yard };
@@ -108,6 +110,11 @@ namespace
 			return retval;
 		}
 
+		bool options(int hub) const
+		{
+			return paths_from_hubs[hub].size();
+		}
+
 		friend std::ostream& operator<<(std::ostream& out, const subpath_collection& c)
 		{
 			for (int i = 0; i < c.num_yards; i++)
@@ -128,7 +135,6 @@ namespace
 	};
 }
 
-
 Solution* assign_insight(insight_state* state)
 {
 	subpath_collection collection{state};
@@ -140,25 +146,39 @@ Solution* assign_insight(insight_state* state)
 
 	int *current_yards = new int[numtrucks];
 	for (int i = 0; i < numtrucks; i++)
-		current_yards[i] = city->start_yard;
+		current_yards[i] = city->start_staging_area;
 
-	Solution* ret_val = new Solution{state->info->city, 3 * state->info->city->num_actions};
+	Solution* ret_val = new Solution{city, 3 * state->info->city->num_actions};
 
 	int size = collection.size();
 	while (size --> 0)
 	{
-		int ndriver = -1;
+		int ntdriver = -1;
 		int mindrivertime = INT_MAX;
+
+		int nmdriver = -1;
+		int minmdrivertime = INT_MAX;
+
 		for (int i = 0; i < numtrucks; i++)
 		{
 			int t = ret_val->get_time_for_driver(i);
-			if (t >= mindrivertime)
+			if (collection.options(current_yards[i]))
 			{
-				continue;
+				if (t < minmdrivertime)
+				{
+					nmdriver = i;
+					minmdrivertime = t;
+				}
 			}
-			ndriver = i;
-			mindrivertime = t;
+			if (t < mindrivertime)
+			{
+				ntdriver = i;
+				mindrivertime = t;
+			}
 		}
+
+		int ndriver = nmdriver < 0 ? ntdriver : nmdriver;
+
 		int clength = ret_val->get_number_of_stops(ndriver);
 
 		int chub = current_yards[ndriver];
@@ -166,32 +186,90 @@ Solution* assign_insight(insight_state* state)
 
 		int faction = subpath.path[0];
 		int saction = subpath.path[1];
+		int laction = faction;
 
-
-		dumpster_size csize = (dumpster_size) (city->get_action(ret_val->get_action_index(ndriver, clength)).exit_state & TRUCK_SIZE_MASK);
+		dumpster_size csize =   (dumpster_size) (city->get_action(ret_val->get_action_index(ndriver, clength-1)).exit_state & TRUCK_SIZE_MASK);
 		dumpster_size in_size = (dumpster_size) (city->get_action(faction).entr_state & TRUCK_SIZE_MASK);
+
+		if (csize == subpath.end)
+		{
+			log() << "matched" << std::endl;
+		}
+		else
+		{
+			log() << "did not match" << std::endl;
+		}
+
+		log() << collection << std::endl;
+		log() << ndriver << " performing " << subpath << std::endl;
+		for (int i = 0; i < numtrucks; i++)
+			log() << current_yards[i] << " ";
+		log() << std::endl;
+
 
 		if (csize != in_size)
 		{
 			int stage_action = city->get_staging_area_index(chub, csize, in_size);
 			ret_val->append(ndriver, clength++, stage_action);
+
+			log() << *ret_val << std::endl;
+
+			viewer.show("building", ret_val);
+			viewer.pause(20);
 		}
 		ret_val->append(ndriver, clength++, faction);
 		if (saction >= 0)
 		{
 			ret_val->append(ndriver, clength++, saction);
-			dumpster_size outsize = (dumpster_size) (city->get_action(saction).exit_state & TRUCK_SIZE_MASK);
-			ret_val->append(ndriver, clength++, city->get_landfill_index(chub, outsize));
+
+			viewer.show("building", ret_val);
+			viewer.pause(20);
+
+			laction = saction;
+		}
+
+		if (state_is_full(city->get_action(laction).exit_state))
+		{
+			dumpster_size outsize = (dumpster_size) (city->get_action(laction).exit_state & TRUCK_SIZE_MASK);
+			ret_val->append(ndriver, clength++, city->get_landfill_index(subpath.end, outsize));
 		}
 
 		current_yards[ndriver] = subpath.end;
+
+		viewer.show("building", ret_val);
+		viewer.pause(20);
 	}
 
-	std::cout << collection.size() << std::endl;
+	int start_loc = city->start_coord_index;
+	for (int i = 0; i < numtrucks; i++)
+	{
+		int len = ret_val->get_number_of_stops(i);
+		if (len == 0)
+		{
+			continue;
+		}
+		const Action& act = city->get_action(ret_val->get_action_index(i, len-1));
+
+		if (state_is_full(act.exit_state))
+		{
+			dumpster_size outsize = (dumpster_size) (act.exit_state & TRUCK_SIZE_MASK);
+			ret_val->append(i, len++, city->get_landfill_index(city->start_staging_area, outsize));
+		}
+
+		if (act.location != start_loc && act.exit_state != TRUCK_STATE_NONE)
+		{
+			continue;
+		}
+		ret_val->append(i, len, city->get_staging_area_index(
+				city->start_staging_area,
+				(dumpster_size) (act.exit_state & TRUCK_SIZE_MASK), none));
+	}
+
+	log() << collection.size() << std::endl;
 
 	ret_val->ensure_valid();
-	std::cout << *ret_val << std::endl;
-	ret_val->human_readable(std::cout);
+	log() << *ret_val << std::endl;
+	ret_val->human_readable(log());
 
 	delete[] current_yards;
 

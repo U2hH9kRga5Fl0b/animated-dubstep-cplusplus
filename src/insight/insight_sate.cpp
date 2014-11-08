@@ -36,6 +36,8 @@ void insight_state::fast_match()
 	bool *already_pickedup = new bool[info->num_pickups];
 	bool *already_delivered = new bool[info->num_delivers];
 
+	void *video = create_video();
+
 	for (int i = 0; i < info->num_pickups; i++)
 		already_pickedup[i] = false;
 	for (int i = 0; i < info->num_delivers; i++)
@@ -103,10 +105,14 @@ void insight_state::fast_match()
 				delivers_to_pickups[di] = pi;
 				already_delivered[di] = true;
 				already_pickedup[pi] = true;
-//				show_insight("foobar", this);
+				show_insight("foobar", this, video);
 			}
 		}
 	}
+
+	show_insight("foobar", this, video, "done");
+
+	destroy_video(video);
 	delete[] already_pickedup;
 	delete[] already_delivered;
 }

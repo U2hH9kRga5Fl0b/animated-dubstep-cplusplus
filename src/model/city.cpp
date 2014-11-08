@@ -18,7 +18,7 @@
 
 #define DIST_SCALE 5000
 
-Action sentinal_action{-1};
+Action sentinal_action{-1, -1};
 
 // This doesn't work because there is no operation for 'replacing' a dumpster at a yard.
 #define ALL_YARD_COMBOS 1
@@ -32,7 +32,7 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	num_stagingareas {num_stagingareas_ },
 	num_locations    {num_requests + num_landfills + num_stagingareas},
 	num_trucks       {num_trucks_       },
-	start_location   {0                 },
+	start_coord_index{0                 },
 	durations        {num_locations     },
 	possibles        {num_actions       },
 	coords           {new Coord[num_locations]},
@@ -45,53 +45,57 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 			&coords[num_landfills + num_stagingareas], num_requests,
 			UNIFORM_CITY_TYPE);
 
+	int action_index = 0;
+
 	int ndx = 0;
 	for (int i = 0; i < num_landfills; i++)
 	{
 		Landfill l { ndx++ };
-		donttouch.push_back(Action{l, six    });
-		donttouch.push_back(Action{l, nine   });
-		donttouch.push_back(Action{l, twelve });
-		donttouch.push_back(Action{l, sixteen});
+		donttouch.push_back(Action{l, six    , action_index++});
+		donttouch.push_back(Action{l, nine   , action_index++});
+		donttouch.push_back(Action{l, twelve , action_index++});
+		donttouch.push_back(Action{l, sixteen, action_index++});
 	}
 
 	truck_types tt[] = {small, medium, large};
 	for (int i = 0; i < num_trucks; i++)
 		trucks[i] = tt[rand() % 3];
 
+	start_coord_index = ndx;
+	start_staging_area = 0;
 	for (int t = 0; t < num_stagingareas; t++)
 	{
 		yards.push_back(Yard{ndx++});
 
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | six,     TRUCK_STATE_NONE });                // index:  0
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | nine,    TRUCK_STATE_NONE });                // index:  1
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | twelve,  TRUCK_STATE_NONE });                // index:  2
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | sixteen, TRUCK_STATE_NONE });                // index:  3
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | six,     TRUCK_STATE_NONE, action_index++ });                // index:  0
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | nine,    TRUCK_STATE_NONE, action_index++ });                // index:  1
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | twelve,  TRUCK_STATE_NONE, action_index++ });                // index:  2
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | sixteen, TRUCK_STATE_NONE, action_index++ });                // index:  3
 
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_NONE, TRUCK_STATE_EMPTY | six      });               // index:  4
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_NONE, TRUCK_STATE_EMPTY | nine     });               // index:  5
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_NONE, TRUCK_STATE_EMPTY | twelve   });               // index:  6
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_NONE, TRUCK_STATE_EMPTY | sixteen  });               // index:  7
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_NONE, TRUCK_STATE_EMPTY | six      , action_index++});               // index:  4
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_NONE, TRUCK_STATE_EMPTY | nine     , action_index++});               // index:  5
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_NONE, TRUCK_STATE_EMPTY | twelve   , action_index++});               // index:  6
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_NONE, TRUCK_STATE_EMPTY | sixteen  , action_index++});               // index:  7
 
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | six      , TRUCK_STATE_EMPTY | nine     });  // index:  8
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | six      , TRUCK_STATE_EMPTY | twelve   });  // index:  9
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | six      , TRUCK_STATE_EMPTY | sixteen  });  // index: 10
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | six      , TRUCK_STATE_EMPTY | nine     , action_index++});  // index:  8
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | six      , TRUCK_STATE_EMPTY | twelve   , action_index++});  // index:  9
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | six      , TRUCK_STATE_EMPTY | sixteen  , action_index++});  // index: 10
 
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | nine     , TRUCK_STATE_EMPTY | six      });  // index: 11
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | nine     , TRUCK_STATE_EMPTY | twelve   });  // index: 12
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | nine     , TRUCK_STATE_EMPTY | sixteen  });  // index: 13
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | nine     , TRUCK_STATE_EMPTY | six      , action_index++});  // index: 11
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | nine     , TRUCK_STATE_EMPTY | twelve   , action_index++});  // index: 12
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | nine     , TRUCK_STATE_EMPTY | sixteen  , action_index++});  // index: 13
 
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | twelve   , TRUCK_STATE_EMPTY | six      });  // index: 14
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | twelve   , TRUCK_STATE_EMPTY | nine     });  // index: 15
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | twelve   , TRUCK_STATE_EMPTY | sixteen  });  // index: 16
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | twelve   , TRUCK_STATE_EMPTY | six      , action_index++});  // index: 14
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | twelve   , TRUCK_STATE_EMPTY | nine     , action_index++});  // index: 15
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | twelve   , TRUCK_STATE_EMPTY | sixteen  , action_index++});  // index: 16
 
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | sixteen  , TRUCK_STATE_EMPTY | six      });  // index: 17
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | sixteen  , TRUCK_STATE_EMPTY | nine     });  // index: 18
-		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | sixteen  , TRUCK_STATE_EMPTY | twelve   });  // index: 19
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | sixteen  , TRUCK_STATE_EMPTY | six      , action_index++});  // index: 17
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | sixteen  , TRUCK_STATE_EMPTY | nine     , action_index++});  // index: 18
+		donttouch.push_back(Action { yards.at(t), TRUCK_STATE_EMPTY | sixteen  , TRUCK_STATE_EMPTY | twelve   , action_index++});  // index: 19
 	}
 
 	for (int i = 0; i < num_requests; i++)
-		donttouch.push_back(Action{ndx++});
+		donttouch.push_back(Action{ndx++, action_index++});
 
 	if (ndx != num_locations)
 	{
@@ -140,12 +144,13 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	first_stagingarea_index = first_landfill_index + num_landfills * NUM_ACTIONS_PER_FILL;
 	first_request_index     = first_stagingarea_index + num_stagingareas * NUM_ACTIONS_PER_YARD;
 
-	start_location = first_stagingarea_index;
-	start_yard = 0;
+	int start_coord_index;
+	int start_staging_area;
+
 
 	sentinal_action.entr_state = TRUCK_STATE_NONE;
 	sentinal_action.exit_state = TRUCK_STATE_NONE;
-	sentinal_action.location   = start_location;
+	sentinal_action.location   = start_coord_index;
 	sentinal_action.begin_time = 0;
 	sentinal_action.end_time   = INT_MAX;
 	sentinal_action.wait_time  = 0;

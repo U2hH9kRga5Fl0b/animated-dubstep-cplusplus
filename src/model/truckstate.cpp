@@ -16,7 +16,7 @@ std::string get_truck_state_desc(truck_state state)
 	switch(state & TRUCK_STATE_MASK)
 	{
 	case TRUCK_STATE_NONE:
-		out << "none";
+		out << "none ";
 		break;
 	case TRUCK_STATE_EMPTY:
 		out << "empty";

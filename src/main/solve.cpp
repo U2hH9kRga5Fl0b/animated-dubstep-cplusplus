@@ -14,32 +14,46 @@
 #include "insight/algo.h"
 
 #include <sstream>
+#include <fstream>
 
 void solve()
 {
 //	log() << *sol << std::endl;
 
-
 	Solution* ins = do_something(city);
 	viewer.show("insight seed", ins);
-	viewer.pause(0);
+	viewer.snapshot("insight", ins, "after_pairing");
+
+	{
+		std::ofstream t{"after_pairing.txt"};
+		ins->human_readable(t);
+	}
+
+
+	int total_time = ins->sum_all_times();
+	log() << "be able to find this" << total_time << std::endl;
 
 	for (int i = 0; i < 1; i++)
 	{
-		Solution* sol = get_random_solution_find(city);
 		std::stringstream ss;
 		ss << "seed" << i;
-		viewer.show(ss.str(), sol);
+		viewer.show(ss.str(), ins);
 
-		while (apply_random_request_exchange(sol, 100))
-			viewer.show(ss.str(), sol);
+		while (apply_random_request_exchange(ins, 100))
+			viewer.show(ss.str(), ins);
 
 		log() << "done random sampling, enforcing..." << std::endl;
 
-		while (apply_first_exchange(sol))
-			viewer.show(ss.str(), sol);
+		while (apply_first_exchange(ins))
+			viewer.show(ss.str(), ins);
 
-		log() << "done enforcing, waiting..." << std::endl;
+		viewer.snapshot("local", ins, "after_local_search");
+		log() << "done enforcing, waiting..." <<  ins->sum_all_times() << std::endl;
 	}
 	viewer.pause();
+
+	int tt = 0;
+	for (int i=0;i<10;i++)
+		tt += get_random_solution_find(city)->sum_all_times();
+	log() << "avg random: " << tt << std::endl;
 }

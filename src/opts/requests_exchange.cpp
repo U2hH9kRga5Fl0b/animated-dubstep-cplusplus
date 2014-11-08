@@ -113,6 +113,7 @@ bool apply_exchange(Solution* s, int d1, int b1, int e1, int d2, int b2, int e2)
 	if (time_delta >= 0)
 		return false;
 
+	log() << "APPLY NEIGHBOR OPERATION: move subpath from [driver:" << std::setw(3) << d1 << ",begin=" << std::setw(3) << b1 << ",end=" << std::setw(3) << e1 << "] to after [driver:" << std::setw(3) << d2 << ",begin=" << std::setw(3) << b2 << ",end=" << std::setw(3) << e2 << "]\n";
 //	std::cout << d1 << ", " << b1 << ", " << e1 << ", " << d2 << ", " << b2 << ", " << e2 << std::endl;
 //	std::cout << pa1 << ", " << fa1 << ", " << la1 << ", " << na1 << std::endl;
 //	std::cout << pa2 << ", " << fa2 << ", " << la2 << ", " << na2 << std::endl;
@@ -205,47 +206,37 @@ bool apply_reschedule(Solution* s, int d1, int b1, int e1, int d2, int b2)
 	if (time_delta >= 0)
 		return false;
 
-//	std::cout << d1 << ", " << b1 << ", " << e1 << ", " << d2 << ", " << b2 << ", " << e2 << std::endl;
+	log() << "APPLY NEIGHBOR OPERATION: move subpath from [driver:" << std::setw(3) << d1 << ",begin=" << std::setw(3) << b1 << ",end=" << std::setw(3) << e1 << "] to after [driver:" << std::setw(3) << d2 << ",begin=" << std::setw(3) << b2 << "]\n";
+//	std::cout << d1 << ", " << b1 << ", " << e1 << ", " << d2 << ", " << b2 << std::endl;
 //	std::cout << pa1 << ", " << fa1 << ", " << la1 << ", " << na1 << std::endl;
-//	std::cout << pa2 << ", " << fa2 << ", " << la2 << ", " << na2 << std::endl;
-
-#if 0
-
-	//TODO: finish this...
-
 
 	int olen1 = n1i - p1i;
 	int olen2 = n2i - p2i;
 
-	int nlen1 = e2 - b2 + p1len + p2len;
-	int nlen2 = e1 - b1 + p3len + p4len;
+	int nlen1 = p3len;
+	int nlen2 = p1len + e1-b1+1 + p2len;
 
 	int t1len = e1 - b1 + 1;
 	int *p1tmps = new int[t1len];
 	for (int i = 0; i < t1len; i++)
 		p1tmps[i] = s->get_action_index(d1, b1 + i);
 
-	s->shift(d1, n1i, nlen1 - olen1 + 2);
-	s->shift(d2, n2i, nlen2 - olen2 + 2);
+	s->shift(d1, n1i, nlen1 - olen1 + 1);
+	s->shift(d2, n2i, nlen2 - olen2 + 1);
 
 	int ndx = p1i + 1;
-	for (int i = 0; i < p1len; i++)
-		s->set_action(d1, ndx++, p1[i]);
-	for (int i = 0; i < t2len; i++)
-		s->set_action(d1, ndx++, p2tmps[i]);
-	for (int i = 0; i < p2len; i++)
-		s->set_action(d1, ndx++, p2[i]);
+	for (int i = 0; i < p3len; i++)
+		s->set_action(d1, ndx++, p3[i]);
 
 	ndx = p2i + 1;
-	for (int i = 0; i < p3len; i++)
-		s->set_action(d2, ndx++, p3[i]);
+	for (int i = 0; i < p1len; i++)
+		s->set_action(d2, ndx++, p1[i]);
 	for (int i = 0; i < t1len; i++)
 		s->set_action(d2, ndx++, p1tmps[i]);
-	for (int i = 0; i < p4len; i++)
-		s->set_action(d2, ndx++, p4[i]);
+	for (int i = 0; i < p2len; i++)
+		s->set_action(d2, ndx++, p2[i]);
 
 	delete[] p1tmps;
-	delete[] p2tmps;
 	s->refresh();
 
 	int ntime = s->sum_all_times();
@@ -253,12 +244,16 @@ bool apply_reschedule(Solution* s, int d1, int b1, int e1, int d2, int b2)
 	{
 		trap();
 	}
-#endif
+
 	return true;
 }
 
 int get_random_request(const Solution* solution, int driver, int length, int avoid)
 {
+	if (length == 0)
+	{
+		return -1;
+	}
 	int ndx = rand() % length;
 
 	for (int i = 0; i < length; i++, ndx++)
