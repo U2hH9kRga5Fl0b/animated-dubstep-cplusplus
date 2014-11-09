@@ -764,6 +764,14 @@ void Solution::insert_after(int driver1, int begin1, int end1, int driver2, int 
 	refresh();
 }
 
+void Solution::mark_serviced(bool* requests, int time) const
+{
+	for (int d = 0; d < c->num_trucks; d++)
+		for (int s = 0; s < get_number_of_stops(d); s++)
+			if (time < times.at(d, s))
+				requests[stops.at(d, s) - c->first_request_index] = true;
+}
+
 void Solution::refresh()
 {
 	for (int i = 0; i < c->num_actions; i++)

@@ -17,7 +17,7 @@ namespace
 
 std::ostream& log()
 {
-	return outfile; //std::cout;
+	return std::cout;
 }
 
 std::ostream& err()

@@ -25,6 +25,25 @@ Action sentinal_action{-1, -1};
 
 #include <set>
 
+
+City::City(const City* other, bool request_filter) :
+	num_actions      {0},
+	num_requests     {0},
+	num_landfills    {0},
+	num_stagingareas {0},
+	num_locations    {0},
+	num_trucks       {0},
+	start_coord_index{0},
+	durations        {0},
+	possibles        {0},
+	coords           {nullptr},
+	trucks           {nullptr},
+	actions          {nullptr},
+	donttouch        {}
+{
+	trap();
+}
+
 City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num_trucks_) :
 	num_actions      {num_requests_ + NUM_ACTIONS_PER_FILL * num_landfills_ + NUM_ACTIONS_PER_YARD * num_stagingareas_ },
 	num_requests     {num_requests_     },
@@ -191,7 +210,6 @@ City::~City()
 	delete[] coords;
 	delete[] trucks;
 }
-
 
 
 std::ostream& operator<<(std::ostream& out, const City& c)

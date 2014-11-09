@@ -26,6 +26,8 @@ inline bool state_is_full(truck_state s) { return s & TRUCK_STATE_FULL; }
 inline bool state_is_empty(truck_state s) { return s & TRUCK_STATE_EMPTY; }
 inline bool state_has_no_dumpster(truck_state s) { return s & TRUCK_STATE_NONE; }
 
+inline truck_state get_state(truck_state st, dumpster_size si) { return st | si; }
+
 std::string get_truck_state_desc(truck_state state);
 
 #endif /* TRUCKSTATE_H_ */

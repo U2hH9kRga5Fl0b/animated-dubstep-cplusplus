@@ -8,12 +8,11 @@
 #ifndef REQUESTS_STOP_H_
 #define REQUESTS_STOP_H_
 
-#include "model/solution.h"
+#include "opts/neighbor.h"
 
+bool apply_random_request_exchange(Solution* solution, int num_attempts, const objective* obj);
+bool apply_first_exchange(Solution* solution, const objective* obj, bool cont=true);
 
-bool apply_random_request_exchange(Solution* solution, int num_attempts);
-bool apply_first_exchange(Solution* solution);
-
-void request_exchange_search(Solution* solution);
+void request_exchange_search(Solution* solution, const objective* obj);
 
 #endif /* REQUESTS_STOP_H_ */
