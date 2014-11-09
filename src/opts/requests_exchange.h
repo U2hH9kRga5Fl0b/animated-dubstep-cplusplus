@@ -10,6 +10,7 @@
 
 #include "model/solution.h"
 
+
 bool apply_random_request_exchange(Solution* solution, int num_attempts);
 bool apply_first_exchange(Solution* solution);
 

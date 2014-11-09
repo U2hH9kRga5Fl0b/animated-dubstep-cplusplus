@@ -17,10 +17,9 @@
 #include "opts/codon.h"
 #include "main/global.h"
 #include "opts/find_path.h"
+#include "opts/requestsubpathiterator.h"
 
 #include <set>
-
-
 
 namespace
 {
@@ -378,4 +377,39 @@ bool apply_first_exchange(Solution* solution)
 	}
 
 	return false;
+}
+
+void request_exchange_search(Solution* solution)
+{
+	solution_exchange_iterator iterator {solution};
+
+	int pb2 = -1;
+
+	while (iterator.is_valid())
+	{
+		if (pb2 != iterator.sub2.begin)
+		{
+			if (apply_reschedule(solution,
+					iterator.sub1.driver, iterator.sub1.begin, iterator.sub1.end,
+					iterator.sub2.driver, iterator.sub2.begin))
+			{
+				iterator.solution_changed();
+				continue;
+			}
+		}
+
+		if (apply_exchange(solution,
+				iterator.sub1.driver, iterator.sub1.begin, iterator.sub1.end,
+				iterator.sub2.driver, iterator.sub2.begin, iterator.sub2.end))
+		{
+			iterator.solution_changed();
+			continue;
+		}
+
+		iterator.increment();
+		if (iterator.at_last_change())
+		{
+			break;
+		}
+	}
 }
