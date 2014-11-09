@@ -35,6 +35,7 @@ public:
 	inline int get_current_dimension() {return stops.cols(); }
 
 	Coord interpolate_location_at(int driver, int time, int *action) const;
+	void mark_serviced(bool* requests, int time) const;
 
 	void ensure_valid() const;
 	friend bool is_feasible(const Solution* solution);

@@ -18,6 +18,9 @@ public:
 	Coord(double x, double y);
 	Coord(const Coord& other);
 	~Coord();
+
+	void uniform(double xmin, double xmax, double ymin, double ymax);
+
 	double dist(const Coord& other) const;
 	double x, y;
 

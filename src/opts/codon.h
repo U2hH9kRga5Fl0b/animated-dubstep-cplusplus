@@ -10,8 +10,6 @@
 
 #include "model/solution.h"
 
-#include "opt/neighbor.h"
-
 #include <cinttypes>
 #include <list>
 

@@ -5,6 +5,15 @@
  *      Author: thallock
  */
 
+
+
+
+
+#if 0
+
+
+
+
 #ifndef NEIGHBOR_H_
 #define NEIGHBOR_H_
 
@@ -21,3 +30,7 @@ class neighbor_operation
 };
 
 #endif /* NEIGHBOR_H_ */
+
+
+
+#endif

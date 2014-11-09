@@ -30,6 +30,8 @@ class City
 {
 public:
 	City(int num_requests, int num_landfills, int num_stagingareas, int num_trucks);
+	City(const City* other, bool request_filter);
+
 	~City();
 
 	inline int get_start_time(int first_action) const
@@ -77,6 +79,12 @@ public:
 		if (index == START_ACTION_INDEX || index == END_ACTION_INDEX) return sentinal_action;
 		INBOUNDS(0, index, num_actions);
 		return actions[index];
+	}
+
+	inline Action* modify_action(int index)
+	{
+		INBOUNDS(first_request_index, index, num_actions);
+		return &donttouch.at(index - first_request_index);
 	}
 
 	inline bool is_landfill(int action) const
