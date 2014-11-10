@@ -9,10 +9,21 @@
 
 int main(int argc, char **argv)
 {
-	// TODO:
-	// Enforce the inventories: especially within the codon search
-	// the codon search should handle sub-paths of zero length
-	// the codon search should handle fixing up each potential codon swap
+// TODO:
+//	implement maxtime
+//	implement path relinking
+//	finish matching
+//
+//	implement applying max of several possible moves
+//	debug why one bad request is not moved
+//	implement smart operation finder
+//	implement exchanges within single path
+//
+//	combine both exchange and reschedule
+//
+//	reimplement staging area capacity and truck types...
+
+
 
 
 	// there is still a bug with the nearest one...
@@ -20,6 +31,7 @@ int main(int argc, char **argv)
 
 	parse_args(argc, argv);
 
+	show_robustness();
 	solve();
 	std::cout << "done" << std::endl;
 }

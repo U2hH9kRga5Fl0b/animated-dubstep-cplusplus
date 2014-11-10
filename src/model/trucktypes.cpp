@@ -22,6 +22,6 @@ std::string truck_name(truck_types t)
 
 	}
 	std::cerr << "bad truck type " << t << std::endl;
-	exit(-1);
+	trap();
 	return "bad truck type";
 }

@@ -71,11 +71,11 @@ int Solution::get_action_index(int driver, int stop) const
 	INBOUNDS(-1, stop, stops.cols()+1);
 	if (stop == -1)
 	{
-		return START_ACTION_INDEX;
+		return BEGIN_INDEX;
 	}
 	else if (stop == lens[driver])
 	{
-		return END_ACTION_INDEX;
+		return END_INDEX;
 	}
 	return stops.at(driver, stop);
 }
@@ -106,7 +106,7 @@ int Solution::get_time_for_driver(int driver) const
 	}
 	int la = stops.at(driver, lens[driver]-1);
 	int lat = times.at(driver, lens[driver]-1);
-	int time_to_fin = c->durations.at(c->get_action(la).location, c->start_coord_index);
+	int time_to_fin = c->get_time_to(driver, la, END_INDEX);
 	return lat + time_to_fin;
 }
 
@@ -190,7 +190,7 @@ void Solution::ensure_valid() const
 					trap();
 				}
 
-				if (s == 0 && !c->is_start_action(stop))
+				if (s == 0 && !c->is_start_action(d, stop))
 				{
 					std::cerr << (*this) << std::endl;
 					std::cerr << "driver " << d << " starts with a dumpster." << std::endl;
@@ -274,7 +274,7 @@ void Solution::ensure_valid() const
 			continue;
 		}
 
-		if (times.at(d, 0) != c->get_start_time(stops.at(d, 0)))
+		if (times.at(d, 0) != c->get_time_to(d, BEGIN_INDEX, stops.at(d, 0)))
 		{
 			std::cerr << (*this) << std::endl;
 			log() << "the first time for driver " << d << " is bad." << std::endl;
@@ -283,7 +283,7 @@ void Solution::ensure_valid() const
 
 		for (int s = 1; s < len; s++)
 		{
-			if (times.at(d, s) != times.at(d, s-1) + c->get_time_to(stops.at(d, s-1), stops.at(d, s)))
+			if (times.at(d, s) != times.at(d, s-1) + c->get_time_to(d, stops.at(d, s-1), stops.at(d, s)))
 			{
 				std::cerr << (*this) << std::endl;
 				log() << "the " << s << "-th time for driver " << d << " is bad." << std::endl;
@@ -338,20 +338,20 @@ std::ostream& operator<<(std::ostream& out, const Solution& sol)
 		out << "inventories:" << std::endl;
 		out << sol.invs << std::endl;
 
-		for (int i = 0; i < sol.times.rows(); i++)
+		for (int driver = 0; driver < sol.times.rows(); driver++)
 		{
-			out << std::setw(5) << sol.get_time_for_driver(i) << ": ";
-			if (sol.stops.at(i, 0) < 0)
+			out << std::setw(5) << sol.get_time_for_driver(driver) << ": ";
+			if (sol.stops.at(driver, 0) < 0)
 			{
 				out << std::endl;
 				continue;
 			}
-			out << std::setw(5) << sol.c->get_time_to(START_ACTION_INDEX, sol.stops.at(i, 0));
-			for (int j = 0; j < sol.lens[i]-1; j++)
+			out << std::setw(5) << sol.c->get_time_to(driver, BEGIN_INDEX, sol.stops.at(driver, 0));
+			for (int j = 0; j < sol.lens[driver]-1; j++)
 			{
-				out << std::setw(5) << sol.c->get_time_to(sol.stops.at(i,j), sol.stops.at(i, j+1)) << " ";
+				out << std::setw(5) << sol.c->get_time_to(driver, sol.stops.at(driver,j), sol.stops.at(driver, j+1)) << " ";
 			}
-			out << std::setw(5) << sol.c->get_time_to(sol.stops.at(i,sol.lens[i]-1), END_ACTION_INDEX);
+			out << std::setw(5) << sol.c->get_time_to(driver, sol.stops.at(driver,sol.lens[driver]-1), END_INDEX);
 			out << std::endl;
 		}
 	}
@@ -380,18 +380,18 @@ Coord Solution::interpolate_location_at(int driver, int time, int *action) const
 
 	if (lens[driver] <= 0)
 	{
-		return c->coords[c->start_coord_index];
+		return c->get_start_location(driver);
 	}
 
 	if (time < times.at(driver, 0))
 	{
 		ftime = 0;
-		mtime = c->durations.at(c->start_coord_index, c->get_action(stops.at(driver, 0)).location);
+		mtime = c->durations.at(c->begin_actions[driver].location, c->get_action(stops.at(driver, 0)).location);
 		ltime = mtime + c->get_action(stops.at(driver, 0)).wait_time;
 		pac = -1;
 		nac = stops.at(driver, 0);
 
-		prevloc = c->start_coord_index;
+		prevloc = c->begin_actions[driver].location;
 		nextloc = c->get_action(stops.at(driver, 0)).location;
 	}
 	else if (time >= times.at(driver, lens[driver]-1))
@@ -401,7 +401,7 @@ Coord Solution::interpolate_location_at(int driver, int time, int *action) const
 		ltime = INT_MAX-1;
 
 		prevloc = c->get_action(stops.at(driver, lens[driver] - 1)).location;
-		nextloc = c->start_coord_index;
+		nextloc = c->final_actions[driver].location;
 
 		pac = stops.at(driver, lens[driver]-1);
 		nac = -1;
@@ -455,7 +455,7 @@ void Solution::human_readable(std::ostream& out) const
 		int len = get_number_of_stops(d);
 		out << "\tlength: " << len << std::endl;
 
-		int prevloc = c->start_coord_index;
+		int prevloc = c->begin_actions[d].location;
 
 		int t=0;
 		for (int s = 0; s < len; s++)
@@ -532,8 +532,8 @@ void Solution::append(int driver, int stop, int action, bool still_valid)
 	stop_numbers[action] = stop;
 	lens[driver] = std::max(lens[driver], stop + 1);
 
-	int prev = stop == 0 ? START_ACTION_INDEX : stops.at(driver, stop-1);
-	int diff = (stop==0?0:times.at(driver, stop-1)) + c->get_time_to(prev, action) - times.at(driver, stop);
+	int prev = get_action_index(driver, stop-1);
+	int diff = (stop==0?0:times.at(driver, stop-1)) + c->get_time_to(driver, prev, action) - times.at(driver, stop);
 	for (int i = stop; i < lens[driver]; i++)
 	{
 		times.at(driver, i) += diff;
@@ -764,12 +764,25 @@ void Solution::insert_after(int driver1, int begin1, int end1, int driver2, int 
 	refresh();
 }
 
-void Solution::mark_serviced(bool* requests, int time) const
+int Solution::mark_serviced(bool* requests, int time) const
 {
+	int count = 0;
 	for (int d = 0; d < c->num_trucks; d++)
 		for (int s = 0; s < get_number_of_stops(d); s++)
-			if (time < times.at(d, s))
-				requests[stops.at(d, s) - c->first_request_index] = true;
+		{
+			if (!c->get_action(stops.at(d, s)).value)
+			{
+				continue;
+			}
+			if (times.at(d, s) >= time)
+			{
+				break;
+			}
+
+			requests[stops.at(d, s) - c->first_request_index] = true;
+			count++;
+		}
+	return count;
 }
 
 void Solution::refresh()
@@ -811,11 +824,11 @@ void Solution::refresh()
 			}
 			if (s == 0)
 			{
-				times.at(d, s) = c->get_start_time(action);
+				times.at(d, s) = c->get_time_to(d, BEGIN_INDEX, stops.at(d, 0));
 			}
 			else
 			{
-				times.at(d, s) = times.at(d, s - 1) + c->get_time_to(stops.at(d, s - 1), action);
+				times.at(d, s) = times.at(d, s - 1) + c->get_time_to(d, stops.at(d, s - 1), action);
 			}
 			if (c->get_action(action).value)
 			{

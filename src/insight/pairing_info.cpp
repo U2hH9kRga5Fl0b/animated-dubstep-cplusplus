@@ -89,7 +89,7 @@ pairing_info* new_pairing_info(const City* city)
 
 	for (int i = 0; i < ret->num_delivers; i++)
 		for (int j = 0; j < ret->num_pickups; j++)
-			ret->d2p.at(i, j) = city->get_time_to(ret->deliver_actions[i], ret->pickup_actions[j]);
+			ret->d2p.at(i, j) = city->get_time_to(-1, ret->deliver_actions[i], ret->pickup_actions[j]);
 
 	dumpster_size sizes[4] = { six, nine, twelve, sixteen };
 	for (int i = 0; i < 4; i++)

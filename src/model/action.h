@@ -18,16 +18,12 @@ class Landfill;
 class Action
 {
 public:
+	Action();
 	Action(int loc, int idx);
 	Action(const Landfill& l, dumpster_size s, int idx);
 	Action(const Yard& y, truck_state in, truck_state out, int idx);
 	~Action() {}
 
-#if 0
-	operation op;
-	dumpster_size in;
-	dumpster_size out;
-#endif
 	int idx;
 
 	truck_state entr_state;

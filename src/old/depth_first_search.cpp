@@ -5,6 +5,8 @@
  *      Author: thallock
  */
 
+#if 0
+
 #include "opts/depth_first_search.h"
 
 #include <set>
@@ -190,3 +192,5 @@ bool search_for_path(Solution* solution, int stop, int maxdepth, insertion& ins,
 
 	return true;
 }
+
+#endif

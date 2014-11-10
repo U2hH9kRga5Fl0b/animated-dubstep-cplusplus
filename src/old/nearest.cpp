@@ -5,6 +5,8 @@
  *      Author: thallock
  */
 
+
+#if 0
 #include "seed/seed.h"
 
 #include "main/global.h"
@@ -64,3 +66,5 @@ Solution* get_nearest_seed_dfs(const City* c)
 
 	return sol;
 }
+
+#endif

@@ -10,8 +10,10 @@
 
 #include "model/solution.h"
 
+#if 0
 Solution* get_random_solution_dfs(const City* c);
 Solution* get_nearest_seed_dfs(const City* c);
+#endif
 
 Solution* get_random_solution_find(const City* c);
 Solution* get_nearest_seed_find(const City* c);

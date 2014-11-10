@@ -14,6 +14,6 @@
 
 #define MAX_PATH 2
 
-void find_path_between_requests(const Solution* solution, int a1, int a2, int *path, int& len, int& time);
+void find_path_between_requests(const Solution* solution, int driver, int a1, int a2, int *path, int& len, int& time);
 
 #endif /* FIND_PATH_H_ */

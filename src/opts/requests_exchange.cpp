@@ -8,7 +8,6 @@
 
 #include "opts/requests_exchange.h"
 
-#include "opts/codon.h"
 #include "main/global.h"
 #include "opts/find_path.h"
 #include "opts/requestsubpathiterator.h"
@@ -210,7 +209,7 @@ bool apply_first_exchange(Solution* solution, const objective* obj, bool cont)
 	return retval;
 }
 
-void request_exchange_search(Solution* solution)
+void request_exchange_search(Solution* solution, const objective* obj)
 {
 	solution_exchange_iterator iterator {solution};
 
@@ -220,18 +219,20 @@ void request_exchange_search(Solution* solution)
 	{
 		if (pb2 != iterator.sub2.begin)
 		{
-			if (apply_reschedule(solution,
+			if (consider_reschedule(solution,
 					iterator.sub1.driver, iterator.sub1.begin, iterator.sub1.end,
-					iterator.sub2.driver, iterator.sub2.begin))
+					iterator.sub2.driver, iterator.sub2.begin,
+					obj, true))
 			{
 				iterator.solution_changed();
 				continue;
 			}
 		}
 
-		if (apply_exchange(solution,
+		if (consider_exchange(solution,
 				iterator.sub1.driver, iterator.sub1.begin, iterator.sub1.end,
-				iterator.sub2.driver, iterator.sub2.begin, iterator.sub2.end))
+				iterator.sub2.driver, iterator.sub2.begin, iterator.sub2.end,
+				obj, true))
 		{
 			iterator.solution_changed();
 			continue;

@@ -11,7 +11,7 @@
 
 void generate_seed()
 {
-	Solution* sol = get_nearest_seed_dfs(city);
+	Solution* sol = get_nearest_seed_find(city);
 	log() << *sol << std::endl;
 	sol->human_readable(log());
 }

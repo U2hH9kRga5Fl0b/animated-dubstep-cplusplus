@@ -5,13 +5,13 @@
  *      Author: thallock
  */
 
+#if 0
 #include "opts/codon.h"
 #include "main/global.h"
 
 #include <set>
 
 
-#if 0
 
 namespace
 {

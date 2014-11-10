@@ -48,6 +48,7 @@ int plength(const Solution* solution, int driver, int start, int end)
 	for (int i = start; i < end; i++)
 	{
 		sum += solution->get_city()->get_time_to(
+			driver,
 			solution->get_action_index(driver, i  ),
 			solution->get_action_index(driver, i+1));
 	}
@@ -118,9 +119,9 @@ int consider_exchange(Solution* s, int d1, int b1, int e1, int d2, int b2, int e
 	int na2 = s->get_action_index(d2, n2i);
 
 	// Never completely remove a driver's path
-	if (pa1 == START_ACTION_INDEX && na1 == END_ACTION_INDEX)
+	if (pa1 == BEGIN_INDEX && na1 == END_INDEX)
 		return INT_MAX;
-	if (pa2 == START_ACTION_INDEX && na2 == END_ACTION_INDEX)
+	if (pa2 == BEGIN_INDEX && na2 == END_INDEX)
 		return INT_MAX;
 
 	int p1[MAX_PATH]; int p1len; int p1time;
@@ -128,10 +129,10 @@ int consider_exchange(Solution* s, int d1, int b1, int e1, int d2, int b2, int e
 	int p3[MAX_PATH]; int p3len; int p3time;
 	int p4[MAX_PATH]; int p4len; int p4time;
 
-	find_path_between_requests(s, pa1, fa2, &p1[0], p1len, p1time);
-	find_path_between_requests(s, la2, na1, &p2[0], p2len, p2time);
-	find_path_between_requests(s, pa2, fa1, &p3[0], p3len, p3time);
-	find_path_between_requests(s, la1, na2, &p4[0], p4len, p4time);
+	find_path_between_requests(s, d1, pa1, fa2, &p1[0], p1len, p1time);
+	find_path_between_requests(s, d1, la2, na1, &p2[0], p2len, p2time);
+	find_path_between_requests(s, d2, pa2, fa1, &p3[0], p3len, p3time);
+	find_path_between_requests(s, d2, la1, na2, &p4[0], p4len, p4time);
 
 	int old_time_cost = TEST_IMPROVEMENT_MEASURE ? s->sum_all_times() : 0;
 	int old_overtime_cost = TEST_IMPROVEMENT_MEASURE ? get_overtime(s, obj->overtime_cost) : 0;
@@ -283,18 +284,18 @@ int consider_reschedule(Solution* s, int d1, int b1, int e1, int d2, int b2,
 	int na2 = s->get_action_index(d2, n2i);
 
 	// Never completely remove a driver's path
-	if (pa1 == START_ACTION_INDEX && na1 == END_ACTION_INDEX)
+	if (pa1 == BEGIN_INDEX && na1 == END_INDEX)
 		return INT_MAX;
-	if (pa2 == START_ACTION_INDEX && na2 == END_ACTION_INDEX)
+	if (pa2 == BEGIN_INDEX && na2 == END_INDEX)
 		return INT_MAX;
 
 	int p1[MAX_PATH]; int p1len; int p1time;
 	int p2[MAX_PATH]; int p2len; int p2time;
 	int p3[MAX_PATH]; int p3len; int p3time;
 
-	find_path_between_requests(s, pa2, fa1, &p1[0], p1len, p1time);
-	find_path_between_requests(s, la1, na2, &p2[0], p2len, p2time);
-	find_path_between_requests(s, pa1, na1, &p3[0], p3len, p3time);
+	find_path_between_requests(s, d2, pa2, fa1, &p1[0], p1len, p1time);
+	find_path_between_requests(s, d2, la1, na2, &p2[0], p2len, p2time);
+	find_path_between_requests(s, d1, pa1, na1, &p3[0], p3len, p3time);
 
 
 	int old_time_cost = TEST_IMPROVEMENT_MEASURE ? s->sum_all_times() : 0;

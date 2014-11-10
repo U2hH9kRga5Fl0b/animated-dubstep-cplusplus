@@ -66,6 +66,21 @@ Action::Action(int loc, int idx_) :
 	}
 }
 
+Action::Action() :
+		idx{-1},
+		entr_state{TRUCK_STATE_NONE},
+		exit_state{TRUCK_STATE_NONE},
+		location{-1},
+		begin_time{0},
+		end_time {TIME_IN_A_DAY},
+		wait_time{0},
+		value{0}
+{
+	for (int i = 0; i < 3; i++)
+		accessible[i] = true;
+}
+
+
 Action::Action(const Landfill& l, dumpster_size s, int idx_) :
 	idx{idx_},
 	entr_state{TRUCK_STATE_FULL  | s},
@@ -102,7 +117,7 @@ std::ostream& operator<<(std::ostream& out, const Action& a)
 	    << "[" << "loc: " << std::setw(3) << a.location                                          << ']'
 	    << "[" << "window:" << std::setw(5) << a.begin_time << '-' << std::setw(5) << a.end_time << ']'
 	    << "[" << "time:" << std::setw(4) << a.wait_time                                         << ']'
-	    << "[" << "is req:" << a.value                                                          << ']'
+	    << "[" << "is req:" << a.value                                                           << ']'
 	    << "[" << "ndx:" << std::setw(3) << a.idx                                                << ']'
 	    << "[" << "trucks:" << ac(0) << ac(1) << ac(2)                                           << ']';
 }

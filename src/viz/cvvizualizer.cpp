@@ -112,7 +112,7 @@ namespace
 			cv::Scalar& color = istate->get_color(d);
 
 			// draw first line
-			Coord& c = sol->get_city()->coords[sol->get_city()->start_coord_index];
+			Coord c = sol->get_city()->get_start_location(d);
 			double x = istate->mat.cols * (c.x - minx) / (maxx - minx);
 			double y = istate->mat.rows * (c.y - miny) / (maxy - miny);
 			cv::Point prev((int) x, (int) y);
@@ -144,7 +144,7 @@ namespace
 			}
 
 			// draw last line
-			c = sol->get_city()->coords[sol->get_city()->start_coord_index];
+			c = sol->get_city()->get_end_location(d);
 			x = istate->mat.cols * (c.x - minx) / (maxx - minx);
 			y = istate->mat.rows * (c.y - miny) / (maxy - miny);
 			cv::Point next((int) x, (int) y);

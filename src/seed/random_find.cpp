@@ -31,7 +31,7 @@ Solution* get_random_solution_find(const City* c)
 		int time;
 		int len;
 		int path[MAX_PATH];
-		find_path_between_requests(sol, pa, na, &path[0], len, time);
+		find_path_between_requests(sol, d, pa, na, &path[0], len, time);
 
 		for (int j = 0; j < len; j++)
 		{

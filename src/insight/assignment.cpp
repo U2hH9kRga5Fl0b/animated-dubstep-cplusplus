@@ -145,8 +145,21 @@ Solution* assign_insight(insight_state* state)
 	const int numtrucks = city->num_trucks;
 
 	int *current_yards = new int[numtrucks];
+
 	for (int i = 0; i < numtrucks; i++)
-		current_yards[i] = city->start_staging_area;
+	{
+		int start_location = city->begin_actions[i].location;
+		int curmin = INT_MAX;
+		for (int j = 0; j < city->num_stagingareas; j++)
+		{
+			int staging_area_location = city->yards.at(j).location;
+			int alt = city->durations.at(start_location, staging_area_location);
+			if (alt >= curmin)
+				continue;
+			curmin = alt;
+			current_yards[i] = j;
+		}
+	}
 
 	Solution* ret_val = new Solution{city, 3 * state->info->city->num_actions};
 
@@ -240,7 +253,6 @@ Solution* assign_insight(insight_state* state)
 		viewer.pause(20);
 	}
 
-	int start_loc = city->start_coord_index;
 	for (int i = 0; i < numtrucks; i++)
 	{
 		int len = ret_val->get_number_of_stops(i);
@@ -250,18 +262,33 @@ Solution* assign_insight(insight_state* state)
 		}
 		const Action& act = city->get_action(ret_val->get_action_index(i, len-1));
 
-		if (state_is_full(act.exit_state))
-		{
-			dumpster_size outsize = (dumpster_size) (act.exit_state & TRUCK_SIZE_MASK);
-			ret_val->append(i, len++, city->get_landfill_index(city->start_staging_area, outsize));
-		}
-
-		if (act.location != start_loc && act.exit_state != TRUCK_STATE_NONE)
+		if (act.exit_state == TRUCK_STATE_NONE)
 		{
 			continue;
 		}
+
+		// We shouldn't just use the closest yard...
+		int end_location = city->final_actions[i].location;
+		int endyard = -1300;
+		int curmin = INT_MAX;
+		for (int j = 0; j < city->num_stagingareas; j++)
+		{
+			int staging_area_location = city->yards.at(j).location;
+			int alt = city->durations.at(end_location, staging_area_location);
+			if (alt >= curmin)
+				continue;
+			endyard = j;
+			curmin = alt;
+		}
+
+		if (state_is_full(act.exit_state))
+		{
+			dumpster_size outsize = (dumpster_size) (act.exit_state & TRUCK_SIZE_MASK);
+			ret_val->append(i, len++, city->get_landfill_index(endyard, outsize));
+		}
+
 		ret_val->append(i, len, city->get_staging_area_index(
-				city->start_staging_area,
+				endyard,
 				(dumpster_size) (act.exit_state & TRUCK_SIZE_MASK), none));
 	}
 

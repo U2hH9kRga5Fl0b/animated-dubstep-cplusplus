@@ -165,11 +165,11 @@ bool driver_subpath::follows(const driver_subpath& other) const
 
 
 solution_exchange_iterator::solution_exchange_iterator(const Solution* solution_) :
-		sub1{solution_},
-		sub2{solution_},
+		sub1        {solution_},
+		sub2        {solution_},
+		solution    {solution_},
 		lastchange1 {solution_},
-		lastchange2 {solution_},
-		solution{solution_}
+		lastchange2 {solution_}
 {
 	reset();
 }

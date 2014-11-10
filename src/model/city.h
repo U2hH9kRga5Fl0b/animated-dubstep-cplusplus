@@ -16,47 +16,50 @@
 
 #include <vector>
 
-#define START_ACTION_INDEX -97
-#define END_ACTION_INDEX   -23
-extern Action sentinal_action;
-
 #define NUM_ACTIONS_PER_YARD 20
 #define NUM_ACTIONS_PER_FILL  4
 
+#define BEGIN_INDEX (-1)
+#define END_INDEX   (-13)
+
+
 inline int get_matching_staging_area_index(dumpster_size in, dumpster_size out);
 inline int get_matching_landfill_index(dumpster_size s);
+
 
 class City
 {
 public:
 	City(int num_requests, int num_landfills, int num_stagingareas, int num_trucks);
-	City(const City* other, bool request_filter);
+	City(const City* other, bool *requests_completed, int count, Coord *locations, truck_state* states);
 
 	~City();
 
+#if 0
 	inline int get_start_time(int first_action) const
 	{
 		INBOUNDS(0, first_action, num_actions);
 		return durations.at(start_coord_index, actions[first_action].location) + actions[first_action].wait_time;
 	}
+#endif
 
-	inline int get_time_to(int from, int to) const
+	inline int get_time_to(int driver, int from, int to) const
 	{
 		int ret_val = 0;
 		int from_loc;
 		int to_loc;
-		if (from == START_ACTION_INDEX)
+		if (from == BEGIN_INDEX)
 		{
-			from_loc = start_coord_index;
+			from_loc = begin_actions[driver].location;
 		}
 		else
 		{
 			INBOUNDS(0, from, num_actions);
 			from_loc = actions[from].location;
 		}
-		if (to == END_ACTION_INDEX)
+		if (to == END_INDEX)
 		{
-			to_loc = start_coord_index;
+			to_loc = final_actions[driver].location;
 		}
 		else
 		{
@@ -68,15 +71,24 @@ public:
 		return ret_val;
 	}
 
-	inline bool is_start_action(const int ndx) const
+	inline bool is_start_action(int driver, const int ndx) const
 	{
 		INBOUNDS(0, ndx, num_actions);
-		return actions[ndx].entr_state == TRUCK_STATE_NONE;
+		return actions[ndx].entr_state == begin_actions[driver].exit_state;
 	}
 
-	inline const Action& get_action(int index) const
+	inline const Action& get_action(int index, int driver=-1) const
 	{
-		if (index == START_ACTION_INDEX || index == END_ACTION_INDEX) return sentinal_action;
+		if (index == BEGIN_INDEX)
+		{
+			INBOUNDS(0, driver, num_trucks);
+			return begin_actions[driver];
+		}
+		if (index == END_INDEX)
+		{
+			INBOUNDS(0, driver, num_trucks);
+			return final_actions[driver];
+		}
 		INBOUNDS(0, index, num_actions);
 		return actions[index];
 	}
@@ -106,9 +118,9 @@ public:
 	inline bool driver_can_service(int driverno, int action) const
 	{
 		return
-				action == START_ACTION_INDEX ||
-				action == END_ACTION_INDEX ||
-				get_action(action).accessible[trucks[driverno]];
+				action == BEGIN_INDEX ||
+				action == END_INDEX ||
+				get_action(action, driverno).accessible[trucks[driverno]];
 	}
 
 	inline int get_staging_area_index(int staging_area, dumpster_size in, dumpster_size out) const
@@ -119,6 +131,16 @@ public:
 	{
 		return first_landfill_index + NUM_ACTIONS_PER_FILL * fill + get_matching_landfill_index(size);
 	}
+	inline const Coord& get_start_location(int driver) const
+	{
+		INBOUNDS(0, driver, num_trucks);
+		return coords[begin_actions[driver].location];
+	}
+	inline const Coord& get_end_location(int driver) const
+	{
+		INBOUNDS(0, driver, num_trucks);
+		return coords[final_actions[driver].location];
+	}
 
 	std::string get_decription(int location) const;
 
@@ -128,9 +150,6 @@ public:
 	int num_stagingareas;
 	int num_locations;
 	int num_trucks;
-
-	int start_coord_index;
-	int start_staging_area;
 
 	intarray durations;
 	intarray possibles;
@@ -143,12 +162,17 @@ public:
 	int first_stagingarea_index;
 	int first_request_index;
 
+	Action* begin_actions;
+	Action* final_actions;
+
 	friend std::ostream& operator<<(std::ostream& out, const City& a);
 
 	double xmax, ymax, xmin, ymin;
+
 private:
 	const Action *actions;
 	std::vector<Action> donttouch;
+	void common_init();
 };
 
 

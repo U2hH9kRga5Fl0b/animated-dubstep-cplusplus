@@ -6,6 +6,7 @@
  */
 
 #include "seed/seed.h"
+#if 0
 
 Solution* get_random_solution_dfs(const City* c)
 {
@@ -76,3 +77,5 @@ Solution* get_random_solution_dfs(const City* c)
 
 	return sol;
 }
+
+#endif

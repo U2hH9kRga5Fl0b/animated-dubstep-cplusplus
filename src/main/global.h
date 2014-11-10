@@ -25,5 +25,6 @@ void make_video();
 void ensure_feasible();
 void solve();
 void show_path();
+void show_robustness();
 
 #endif /* ARGUMENTS_HPP_ */

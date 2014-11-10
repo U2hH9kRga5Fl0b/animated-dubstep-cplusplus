@@ -11,7 +11,7 @@
 
 void generate_random()
 {
-	Solution* sol = get_random_solution_dfs(city);
+	Solution* sol = get_random_solution_find(city);
 	log() << *sol << std::endl;
 	sol->human_readable(log());
 }
