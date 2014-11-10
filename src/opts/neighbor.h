@@ -10,6 +10,8 @@
 
 #include "model/solution.h"
 
+#define VERBOSE_NEIGHBOR_OPERATIONS 0
+
 enum objective_type
 {
 	relink,

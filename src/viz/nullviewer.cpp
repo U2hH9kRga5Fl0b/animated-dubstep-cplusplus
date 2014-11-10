@@ -5,16 +5,8 @@
  *      Author: thallock
  */
 
-#include <viz/nullviewer.h>
+#include "viz/nullviewer.h"
 
-nullviewer::nullviewer()
-{
-	// TODO Auto-generated constructor stub
-
-}
-
-nullviewer::~nullviewer()
-{
-	// TODO Auto-generated destructor stub
-}
+nullviewer::nullviewer() {}
+nullviewer::~nullviewer() {}
 

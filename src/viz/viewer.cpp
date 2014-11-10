@@ -17,6 +17,7 @@ namespace
 
 
 Viewer::Viewer() : on{true} {}
+
 Viewer::~Viewer() { turn_off(); }
 
 void Viewer::turn_on()

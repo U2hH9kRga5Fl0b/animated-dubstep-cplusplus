@@ -190,7 +190,8 @@ int consider_exchange(Solution* s, int d1, int b1, int e1, int d2, int b2, int e
 		return change_in_objective;
 
 
-	log() << "APPLY NEIGHBOR OPERATION: move subpath from [driver:" << std::setw(3) << d1 << ",begin=" << std::setw(3) << b1 << ",end=" << std::setw(3) << e1 << "] to after [driver:" << std::setw(3) << d2 << ",begin=" << std::setw(3) << b2 << ",end=" << std::setw(3) << e2 << "]\n";
+	if (VERBOSE_NEIGHBOR_OPERATIONS)
+		log() << "APPLY NEIGHBOR OPERATION: move subpath from [driver:" << std::setw(3) << d1 << ",begin=" << std::setw(3) << b1 << ",end=" << std::setw(3) << e1 << "] to after [driver:" << std::setw(3) << d2 << ",begin=" << std::setw(3) << b2 << ",end=" << std::setw(3) << e2 << "]\n";
 //	std::cout << d1 << ", " << b1 << ", " << e1 << ", " << d2 << ", " << b2 << ", " << e2 << std::endl;
 //	std::cout << pa1 << ", " << fa1 << ", " << la1 << ", " << na1 << std::endl;
 //	std::cout << pa2 << ", " << fa2 << ", " << la2 << ", " << na2 << std::endl;
@@ -371,7 +372,9 @@ int consider_reschedule(Solution* s, int d1, int b1, int e1, int d2, int b2,
 	if (!apply || change_in_objective >= 0)
 		return change_in_objective;
 
-	log() << "APPLY NEIGHBOR OPERATION: move subpath from [driver:" << std::setw(3) << d1 << ",begin=" << std::setw(3) << b1 << ",end=" << std::setw(3) << e1 << "] to after [driver:" << std::setw(3) << d2 << ",begin=" << std::setw(3) << b2 << "]\n";
+
+	if (VERBOSE_NEIGHBOR_OPERATIONS)
+		log() << "APPLY NEIGHBOR OPERATION: move subpath from [driver:" << std::setw(3) << d1 << ",begin=" << std::setw(3) << b1 << ",end=" << std::setw(3) << e1 << "] to after [driver:" << std::setw(3) << d2 << ",begin=" << std::setw(3) << b2 << "]\n";
 //	std::cout << d1 << ", " << b1 << ", " << e1 << ", " << d2 << ", " << b2 << std::endl;
 //	std::cout << pa1 << ", " << fa1 << ", " << la1 << ", " << na1 << std::endl;
 
