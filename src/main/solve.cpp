@@ -68,13 +68,13 @@ void solve()
 #endif
 
 	objective obj1 { 0};
-	objective obj8 { 1};
-	objective obj2 { 2};
-	objective obj3 { 3};
-	objective obj4 { 4};
-	objective obj5 { 5};
-	objective obj6 {10};
-	objective obj7 {50};
+//	objective obj8 { 1};
+//	objective obj2 { 2};
+//	objective obj3 { 3};
+//	objective obj4 { 4};
+//	objective obj5 { 5};
+//	objective obj6 {10};
+//	objective obj7 {50};
 
 	std::ofstream timesfile {"overtime_file.txt"};
 
@@ -84,13 +84,13 @@ void solve()
 		ss << "seed" << i;
 
 		summarize(timesfile, &obj1, ss.str());
-		summarize(timesfile, &obj8, ss.str());
-		summarize(timesfile, &obj2, ss.str());
-		summarize(timesfile, &obj3, ss.str());
-		summarize(timesfile, &obj4, ss.str());
-		summarize(timesfile, &obj5, ss.str());
-		summarize(timesfile, &obj6, ss.str());
-		summarize(timesfile, &obj7, ss.str());
+//		summarize(timesfile, &obj8, ss.str());
+//		summarize(timesfile, &obj2, ss.str());
+//		summarize(timesfile, &obj3, ss.str());
+//		summarize(timesfile, &obj4, ss.str());
+//		summarize(timesfile, &obj5, ss.str());
+//		summarize(timesfile, &obj6, ss.str());
+//		summarize(timesfile, &obj7, ss.str());
 	}
 	viewer.pause();
 }

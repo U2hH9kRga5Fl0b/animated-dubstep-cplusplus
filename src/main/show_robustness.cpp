@@ -12,7 +12,7 @@
 
 void show_robustness()
 {
-	reduced_results *results = get_results(city, 5, 3, 0);
+	reduced_results *results = get_results(5, 3, 0);
 	log() << *results;
 	delete results;
 }
