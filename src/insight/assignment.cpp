@@ -19,53 +19,59 @@ namespace
 			num_yards{state->info->num_staging_areas},
 			paths_from_hubs{new std::list<interhub>[num_yards]}
 		{
-			bool* already_pickedup = new bool[state->info->num_pickups];
-			for (int i = 0; i < state->info->num_pickups; i++)
-				already_pickedup[i] = false;
-
-			for (int i = 0; i < state->info->num_delivers; i++)
+			for (int s = 0; s < 4; s++)
 			{
-				int pickup_index = state->delivers_to_pickups[i];
-				if (pickup_index < 0)
+				int num_picks = state->info->pickup_lens[s];
+				int num_dels = state->info->deliver_lens[s];
+
+				bool* already_pickedup = new bool[num_picks];
+				for (int i = 0; i < num_picks; i++)
+					already_pickedup[i] = false;
+
+				for (int i = 0; i < num_dels; i++)
 				{
-					int begin_yard = state->deliver_depots[i];
-					int end_yard = state->deliver_depots[i]; // TODO: this is not going to be true in general!!
+					int pickup_index = state->delivers_to_pickups[s][i];
+					if (pickup_index < 0)
+					{
+						int begin_yard = state->deliver_depots[s][i];
+						int end_yard = state->deliver_depots[s][i]; // TODO: this is not going to be true in general!!
+
+						interhub interh { begin_yard, end_yard };
+						interh.path[0] = state->info->deliver_actions[s][i];
+
+						paths_from_hubs[begin_yard].push_back(interh);
+					}
+					else
+					{
+						int begin_yard = state->deliver_depots[s][i];
+						int pickup = state->info->pickup_actions[s][pickup_index];
+						int end_yard = state->pickup_depots[s][pickup_index];
+
+						interhub interh { begin_yard, end_yard };
+						interh.path[0] = state->info->deliver_actions[s][i];
+						interh.path[1] = pickup;
+
+						paths_from_hubs[begin_yard].push_back(interh);
+						already_pickedup[pickup_index] = true;
+					}
+				}
+
+				for (int i = 0; i < num_picks; i++)
+				{
+					if (already_pickedup[i])
+					{
+						continue;
+					}
+					int begin_yard = state->pickup_depots[s][i];
+					int end_yard = begin_yard; // TODO: this is not going to be true in general!!
 
 					interhub interh { begin_yard, end_yard };
-					interh.path[0] = state->info->deliver_actions[i];
-
+					interh.path[0] = state->info->pickup_actions[s][i];
 					paths_from_hubs[begin_yard].push_back(interh);
 				}
-				else
-				{
-					int begin_yard = state->deliver_depots[i];
-					int pickup = state->info->pickup_actions[pickup_index];
-					int end_yard = state->pickup_depots[pickup_index];
 
-					interhub interh { begin_yard, end_yard };
-					interh.path[0] = state->info->deliver_actions[i];
-					interh.path[1] = pickup;
-
-					paths_from_hubs[begin_yard].push_back(interh);
-					already_pickedup[pickup_index] = true;
-				}
+				delete[] already_pickedup;
 			}
-
-			for (int i = 0; i < state->info->num_pickups; i++)
-			{
-				if (already_pickedup[i])
-				{
-					continue;
-				}
-				int begin_yard = state->pickup_depots[i];
-				int end_yard = begin_yard; // TODO: this is not going to be true in general!!
-
-				interhub interh {begin_yard, end_yard};
-				interh.path[0] = state->info->pickup_actions[i];
-				paths_from_hubs[begin_yard].push_back(interh);
-			}
-
-			delete[] already_pickedup;
 		}
 
 		int size() const
@@ -201,7 +207,7 @@ Solution* assign_insight(insight_state* state)
 		int saction = subpath.path[1];
 		int laction = faction;
 
-		dumpster_size csize =   (dumpster_size) (city->get_action(ret_val->get_action_index(ndriver, clength-1)).exit_state & TRUCK_SIZE_MASK);
+		dumpster_size csize =   (dumpster_size) (city->get_action(ret_val->get_action_index(ndriver, clength-1), ndriver).exit_state & TRUCK_SIZE_MASK);
 		dumpster_size in_size = (dumpster_size) (city->get_action(faction).entr_state & TRUCK_SIZE_MASK);
 
 		if (csize == subpath.end)
@@ -260,7 +266,7 @@ Solution* assign_insight(insight_state* state)
 		{
 			continue;
 		}
-		const Action& act = city->get_action(ret_val->get_action_index(i, len-1));
+		const Action& act = city->get_action(ret_val->get_action_index(i, len-1), i);
 
 		if (act.exit_state == TRUCK_STATE_NONE)
 		{

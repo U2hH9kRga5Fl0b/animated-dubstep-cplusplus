@@ -9,16 +9,18 @@
 #include "insight/interhub_summary.h"
 
 inter_hub_travel::inter_hub_travel(const insight_state& state) :
-	num_from_to{state.info->num_staging_areas,state.info->num_staging_areas}
+		num_from_to { state.info->num_staging_areas, state.info->num_staging_areas }
 {
 	num_from_to = 0;
 
-	for (int i = 0; i < state.info->num_delivers; i++)
+	for (int s = 0; s < 4; s++)
 	{
-		if (state.delivers_to_pickups[i] < 0)
-			continue;
-		num_from_to.at(state.deliver_depots[i], state.pickup_depots[state.delivers_to_pickups[i]])++;
-	}
+		for (int i = 0; i < state.info->deliver_lens[s]; i++)
+		{
+			if (state.delivers_to_pickups[i] < 0)
+				continue;
+			num_from_to.at(state.deliver_depots[s][i], state.pickup_depots[s][state.delivers_to_pickups[s][i]])++;}
+		}
 
 	auto end = state.inters.end();
 	for (auto it = state.inters.begin(); it != end; ++it)

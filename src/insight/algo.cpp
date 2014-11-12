@@ -30,17 +30,15 @@
 
 Solution* do_something(City* city)
 {
-	pairing_info *info = new_pairing_info(city);
+	pairing_info info{city};
 
-	insight_state state{info};
+	insight_state state{&info};
 	state.fast_match();
 
 	inter_hub_travel summary{state};
 	log() << summary << std::endl;
 
 	Solution* assignment = assign_insight(&state);
-
-	delete info;
 
 	return assignment;
 }

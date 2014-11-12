@@ -18,24 +18,28 @@ public:
 	const City* city;
 	int num_staging_areas;
 
-	int num_pickups;
-	int *pickup_actions;
-	int first_pickup_of_size[4];
-	intarray pickup_depots;
+	int total_num_pickups;
+	int pickup_lens[4];
+	int *pickup_actions[4];
 
-	int num_delivers;
-	int *deliver_actions;
-	int first_deliver_of_size[4];
-	intarray deliver_depots;
+	int total_num_delivers;
+	int deliver_lens[4];
+	int *deliver_actions[4];
 
 	intarray depot_2_depot;
 
-	intarray d2p;
-
-
-	pairing_info(const City* city, int d, int p, int ndpts);
+	pairing_info(const City* city);
 	~pairing_info();
 
+	int get_nth_closest_deliver_depot(int dumpster_index, int deliver_index, int n) const;
+	int get_nth_closest_pickup_depot(int dumpster_index, int pickup_index, int n) const;
+
+private:
+	int **closest_delivers[4];
+	int **closest_pickups[4];
+};
+
+#if 0
 	dumpster_size get_deliver_size(int d) const
 	{
 		INBOUNDS(0, d, num_delivers);
@@ -64,9 +68,7 @@ public:
 			else
 				return sixteen;
 	}
-
-};
-
-pairing_info* new_pairing_info(const City* city);
+	pairing_info* new_pairing_info(const City* city);
+#endif
 
 #endif /* PAIRING_INFO_H_ */

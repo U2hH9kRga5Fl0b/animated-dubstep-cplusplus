@@ -7,6 +7,14 @@
 
 #include "main/global.h"
 
+
+
+
+
+
+#include "insight/algo.h"
+#include "c/hungarian.h"
+
 int main(int argc, char **argv)
 {
 // TODO:
@@ -31,8 +39,14 @@ int main(int argc, char **argv)
 
 	parse_args(argc, argv);
 
-	show_robustness();
-	solve();
+	delete do_something(city);
+
+	viewer.pause();
+
+//	show_robustness();
+//	solve();
+
+
 	std::cout << "done" << std::endl;
 }
 

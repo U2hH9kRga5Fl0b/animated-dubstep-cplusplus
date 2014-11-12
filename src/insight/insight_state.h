@@ -18,9 +18,9 @@ class insight_state
 public:
 	const pairing_info* info;
 
-	int *deliver_depots;
-	int *pickup_depots;
-	int *delivers_to_pickups;
+	int *deliver_depots[4];
+	int *pickup_depots[4];
+	int *delivers_to_pickups[4];
 
 	std::list<interhub> inters;
 
