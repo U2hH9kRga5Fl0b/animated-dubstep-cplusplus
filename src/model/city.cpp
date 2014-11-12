@@ -109,6 +109,9 @@ City::City(int num_requests_, int num_landfills_, int num_stagingareas_, int num
 	{
 		begin_actions[i].location = ndx++;
 		final_actions[i].location = ndx++;
+
+		// he he
+		coords[begin_actions[i].location] = coords[final_actions[i].location];
 	}
 
 	if (ndx != num_locations)

@@ -21,9 +21,6 @@ void summarize(std::ostream& out, const objective* obj, const std::string& name)
 	Solution* sol = get_random_solution_find(city);
 	log () << "begin cost " << name << ": " << sol->sum_all_times() << std::endl;
 
-	objective n{0};
-	while (apply_first_exchange(sol, &n, true))
-		viewer.show(name, sol);
 	while (apply_first_exchange(sol, obj, true))
 		viewer.show(name, sol);
 
@@ -67,30 +64,20 @@ void solve()
 
 #endif
 
-	objective obj1 { 0};
-//	objective obj8 { 1};
-//	objective obj2 { 2};
-//	objective obj3 { 3};
-//	objective obj4 { 4};
-//	objective obj5 { 5};
-//	objective obj6 {10};
-//	objective obj7 {50};
+	objective n{0};
+	objective o{};
+	objective n2{1};
 
-	std::ofstream timesfile {"overtime_file.txt"};
+	std::ofstream timesfile {"output/overtime_file.txt"};
 
 	for (int i = 0; i < 1; i++)
 	{
 		std::stringstream ss;
-		ss << "seed" << i;
+		ss << "seed_" << i;
 
-		summarize(timesfile, &obj1, ss.str());
-//		summarize(timesfile, &obj8, ss.str());
-//		summarize(timesfile, &obj2, ss.str());
-//		summarize(timesfile, &obj3, ss.str());
-//		summarize(timesfile, &obj4, ss.str());
-//		summarize(timesfile, &obj5, ss.str());
-//		summarize(timesfile, &obj6, ss.str());
-//		summarize(timesfile, &obj7, ss.str());
+		summarize(timesfile, &o, ss.str() + "_max");
+		summarize(timesfile, &n, ss.str() + "_sum");
+		summarize(timesfile, &n2, ss.str() + "_overtime");
 	}
 	viewer.pause();
 }

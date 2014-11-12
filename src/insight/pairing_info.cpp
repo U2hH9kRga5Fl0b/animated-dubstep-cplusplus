@@ -10,28 +10,8 @@
 #include <list>
 #include <algorithm>
 
-
-
-
-
-
 namespace
 {
-	int d2i(truck_state state)
-	{
-		switch (state & TRUCK_SIZE_MASK)
-		{
-			case none   : trap(); return -1300;
-			case six    : return 0;
-			case nine   : return 1;
-			case twelve : return 2;
-			case sixteen: return 3;
-		}
-		trap();
-		return -1300;
-	}
-
-
 	struct b4_dpt_cmp
 	{
 		const City* city; int loc;
@@ -64,94 +44,154 @@ pairing_info::pairing_info(const City* city_) :
 		num_staging_areas{(int) city->yards.size()},
 		depot_2_depot{num_staging_areas, num_staging_areas}
 {
-	std::list<int> ps[4];
-	std::list<int> ds[4];
+	std::list<int> ps;
+	std::list<int> ds;
 
 	for (int i = 0; i < city->num_requests; i++)
 	{
 		const Action& action = city->get_action(i + city->first_request_index);
 		if (state_is_full(action.exit_state))
-			ps[d2i(action.exit_state)].push_back(i + city->first_request_index);
+			ps.push_back(i + city->first_request_index);
 		else
-			ds[d2i(action.entr_state)].push_back(i + city->first_request_index);
+			ds.push_back(i + city->first_request_index);
 	}
 
-	for (int s = 0; s < 4; s++)
+	int i = 0;
+	pickup_lens = ps.size();
+	pickup_actions = new int[pickup_lens];
+	for (auto it = ps.begin(); it != ps.end(); ++it, i++)
+		pickup_actions[i] = *it;
+
+	i = 0;
+	deliver_lens = ds.size();
+	deliver_actions = new int[deliver_lens];
+	for (auto it = ds.begin(); it != ds.end(); ++it, i++)
+		deliver_actions[i] = *it;
+
+
+
+
+
+
+
+	std::sort(&pickup_actions[0], &pickup_actions[pickup_lens], [city](const int p1, const int p2)
+	{	return (city->get_action(p1).exit_state & TRUCK_SIZE_MASK) < (city->get_action(p2).exit_state & TRUCK_SIZE_MASK);});
+	std::sort(&deliver_actions[0], &deliver_actions[deliver_lens], [city](const int d1, const int d2)
+	{	return (city->get_action(d1).entr_state & TRUCK_SIZE_MASK) < (city->get_action(d2).entr_state & TRUCK_SIZE_MASK);});
+
+//	for (int i = 0; i < deliver_lens; i++)
+//		for (int j = 0; j <pickup_lens; j++)
+//			ret->d2p.at(i, j) = city->get_time_to(-1, ret->deliver_actions[i], ret->pickup_actions[j]);
+
+	dumpster_size sizes[4] = { six, nine, twelve, sixteen };
+
+	for (int j = 0; j < pickup_lens; j++)
 	{
-		int i = 0;
-		pickup_lens[s] = ps[s].size();
-		pickup_actions[s] = new int[pickup_lens[s]];
-		for (auto it = ps[s].begin(); it != ps[s].end(); ++it, i++)
-			pickup_actions[s][i] = *it;
-
-		i = 0;
-		deliver_lens[s] = ds[s].size();
-		deliver_actions[s] = new int[deliver_lens[s]];
-		for (auto it = ds[s].begin(); it != ds[s].end(); ++it, i++)
-			deliver_actions[s][i] = *it;
-
-		closest_delivers[s] = new int*[deliver_lens[s]];
-		for (int i = 0; i < deliver_lens[s]; i++)
+		int size = d2i(city->get_action(pickup_actions[j]).exit_state & TRUCK_SIZE_MASK);
+		if (pickup_sizes[size].begin > j)
 		{
-			closest_delivers[s][i] = new int[num_staging_areas];
-			for (int j = 0; j < num_staging_areas; j++)
-				closest_delivers[s][i][j] = j;
-			int loc = city->get_action(deliver_actions[s][i]).location;
-			std::sort(&closest_delivers[s][i][0], &closest_delivers[s][i][0] + num_staging_areas, b4_dpt_cmp{city, loc});
+			pickup_sizes[size].begin = j;
 		}
-
-		closest_pickups[s] = new int*[pickup_lens[s]];
-		for (int i = 0; i < pickup_lens[s]; i++)
+		if (pickup_sizes[size].end < j+1)
 		{
-			closest_pickups[s][i] = new int[num_staging_areas];
-			for (int j = 0; j < num_staging_areas; j++)
-				closest_pickups[s][i][j] = j;
-			int loc = city->get_action(pickup_actions[s][i]).location;
-			std::sort(&closest_pickups[s][i][0], &closest_pickups[s][i][0] + num_staging_areas, aftr_dpt_cmp{city, loc});
+			pickup_sizes[size].end = j+1;
 		}
+	}
+	for (int j = 0; j < deliver_lens; j++)
+	{
+		int size = d2i(city->get_action(deliver_actions[j]).entr_state & TRUCK_SIZE_MASK);
+		if (deliver_sizes[size].begin > j)
+		{
+			deliver_sizes[size].begin = j;
+		}
+		if (deliver_sizes[size].end < j+1)
+		{
+			deliver_sizes[size].end = j+1;
+		}
+	}
+	if (DEBUG)
+	{
+		INBOUNDS(0, deliver_sizes[0].begin, deliver_sizes[0].end);
+		INBOUNDS(deliver_sizes[0].end, deliver_sizes[1].begin, deliver_sizes[0].end+1);
+
+		INBOUNDS(deliver_sizes[0].end, deliver_sizes[1].begin, deliver_sizes[1].end);
+		INBOUNDS(deliver_sizes[1].end, deliver_sizes[2].begin, deliver_sizes[1].end+1);
+
+		INBOUNDS(deliver_sizes[1].end, deliver_sizes[2].begin, deliver_sizes[2].end);
+		INBOUNDS(deliver_sizes[2].end, deliver_sizes[3].begin, deliver_sizes[2].end+1);
+
+		INBOUNDS(deliver_sizes[0].end, deliver_sizes[1].begin, deliver_sizes[1].end);
+		INBOUNDS(deliver_sizes[3].end, deliver_sizes[3].begin, deliver_lens);
+
+		INBOUNDS(0, -1 , 0);
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	closest_delivers = new int*[deliver_lens];
+	for (int i = 0; i < deliver_lens; i++)
+	{
+		closest_delivers[i] = new int[num_staging_areas];
+		for (int j = 0; j < num_staging_areas; j++)
+			closest_delivers[i][j] = j;
+		int loc = city->get_action(deliver_actions[i]).location;
+		std::sort(&closest_delivers[i][0], &closest_delivers[i][0] + num_staging_areas, b4_dpt_cmp { city, loc });
+	}
+
+	closest_pickups = new int*[pickup_lens];
+	for (int i = 0; i < pickup_lens; i++)
+	{
+		closest_pickups[i] = new int[num_staging_areas];
+		for (int j = 0; j < num_staging_areas; j++)
+			closest_pickups[i][j] = j;
+		int loc = city->get_action(pickup_actions[i]).location;
+		std::sort(&closest_pickups[i][0], &closest_pickups[i][0] + num_staging_areas, aftr_dpt_cmp { city, loc });
 	}
 
 	for (int i = 0; i < num_staging_areas; i++)
-	{
 		for (int j = 0; j < num_staging_areas; j++)
-		{
 			depot_2_depot.at(i, j) = city->durations.at(city->yards.at(i).location, city->yards.at(j).location);
-		}
-	}
 }
 
 pairing_info::~pairing_info()
 {
-	for (int s = 0; s < 4; s++)
-	{
-		delete[] deliver_actions[s];
-		for (int i = 0; i < deliver_lens[s]; i++)
-			delete[] closest_delivers[s][i];
-		delete[] closest_delivers[s];
+	delete[] deliver_actions;
+	for (int i = 0; i < deliver_lens; i++)
+		delete[] closest_delivers[i];
+	delete[] closest_delivers;
 
-		delete[] pickup_actions[s];
-		for (int i = 0; i < pickup_lens[s]; i++)
-			delete[] closest_pickups[s][i];
-		delete[] closest_pickups[s];
-	}
+	delete[] pickup_actions;
+	for (int i = 0; i < pickup_lens; i++)
+		delete[] closest_pickups[i];
+	delete[] closest_pickups;
 }
 
 
 
-int pairing_info::get_nth_closest_deliver_depot(int s, int deliver_index, int n) const
+int pairing_info::get_nth_closest_deliver_depot(int deliver_index, int n) const
 {
-	INBOUNDS(0, s, 4);
-	INBOUNDS(0, deliver_index, deliver_lens[s]);
+	INBOUNDS(0, deliver_index, deliver_lens);
 	INBOUNDS(0, n, num_staging_areas);
-	return closest_delivers[s][deliver_index][n];
+	return closest_delivers.at(deliver_index, n);
 }
 
-int pairing_info::get_nth_closest_pickup_depot(int s, int pickup_index, int n) const
+int pairing_info::get_nth_closest_pickup_depot(int pickup_index, int n) const
 {
-	INBOUNDS(0, s, 4);
-	INBOUNDS(0, pickup_index, pickup_lens[s]);
+	INBOUNDS(0, pickup_index, pickup_lens);
 	INBOUNDS(0, n, num_staging_areas);
-	return closest_pickups[s][pickup_index][n];
+	return closest_pickups.at(pickup_index, n);
 }
 
 #if 0

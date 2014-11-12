@@ -18,17 +18,26 @@ class insight_state
 public:
 	const pairing_info* info;
 
-	int *deliver_depots[4];
-	int *pickup_depots[4];
-	int *delivers_to_pickups[4];
+	// determines inventories
 
-	std::list<interhub> inters;
+	int *deliver_depots;
+	int *pickup_depots;
 
-	void fast_match();
+	int *delivers_to_pickups;
 
+	int *unmatched_delivers;
+	int *unmatched_pickups;
+
+	interhub *embark;
+	interhub *finish;
 
 	insight_state(const pairing_info* info);
+	insight_state(const pairing_info* info, const Solution* solution);
 	~insight_state();
+
+	void fast_match();
+	friend std::ostream& operator<<(std::ostream& out, const insight_state& state);
+
 };
 
 

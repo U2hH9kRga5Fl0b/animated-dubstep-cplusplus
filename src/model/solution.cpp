@@ -102,7 +102,7 @@ int Solution::get_time_for_driver(int driver) const
 	INBOUNDS(0, driver, stops.rows());
 	if (lens[driver] <= 0)
 	{
-		return 0;
+		return c->get_time_to(driver, BEGIN_INDEX, END_INDEX);
 	}
 	int la = stops.at(driver, lens[driver]-1);
 	int lat = times.at(driver, lens[driver]-1);
@@ -380,9 +380,15 @@ Coord Solution::interpolate_location_at(int driver, int time, int *action) const
 
 	if (lens[driver] <= 0)
 	{
-		return c->get_start_location(driver);
-	}
+		ftime = 0;
+		mtime = get_time_for_driver(driver);
+		ltime = INT_MAX;
+		pac = BEGIN_INDEX;
+		nac = END_INDEX;
 
+		prevloc = c->begin_actions[driver].location;
+		nextloc = c->final_actions[driver].location;
+	}
 	if (time < times.at(driver, 0))
 	{
 		ftime = 0;

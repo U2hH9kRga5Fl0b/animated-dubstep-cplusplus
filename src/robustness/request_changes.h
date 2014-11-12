@@ -42,7 +42,7 @@ struct reduced_results
 
 	friend std::ostream& operator<<(std::ostream& out, const reduced_results& results)
 	{
-		constexpr int WIDTH = 10;
+		constexpr int WIDTH = 6;
 
 		out << "total:\n";
 		for (int i = 0; i < results.num_trials; i++)

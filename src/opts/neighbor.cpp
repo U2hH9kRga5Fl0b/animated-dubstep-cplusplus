@@ -44,6 +44,7 @@ int fnr(const Solution* solution, int driver, int index)
 
 int plength(const Solution* solution, int driver, int start, int end)
 {
+	/// This is actually already calculated for us in the sol->times matrix...
 	int sum = 0;
 	for (int i = start; i < end; i++)
 	{
@@ -81,12 +82,41 @@ int get_overtime_cost(int *times, int len, int overtime_cost, int& minindex)
 	return retval;
 }
 
+
 int get_overtime(const Solution* solution, int overtime_cost)
 {
 	int len;
 	int minindex;
 	int *ts = get_all_times(solution, len);
 	int ret = get_overtime_cost(ts, len, overtime_cost, minindex);
+	delete[] ts;
+	return ret;
+}
+
+int get_max_time(int *times, int len, int& maxindex)
+{
+	int maxtime = INT_MIN;
+	int sum = 0;
+
+	for (int i = 0; i < len; i++)
+	{
+		sum += times[i];
+		if (times[i] > maxtime)
+		{
+			maxtime = times[i];
+			maxindex = i;
+		}
+	}
+
+	return sum + maxtime * len * len;
+}
+
+int get_max_time(const Solution* solution)
+{
+	int len;
+	int minindex;
+	int *ts = get_all_times(solution, len);
+	int ret = get_max_time(ts, len, minindex);
 	delete[] ts;
 	return ret;
 }
@@ -119,9 +149,9 @@ int consider_exchange(Solution* s, int d1, int b1, int e1, int d2, int b2, int e
 	int na2 = s->get_action_index(d2, n2i);
 
 	// Never completely remove a driver's path
-	if (pa1 == BEGIN_INDEX && na1 == END_INDEX)
+	if (pa1 == BEGIN_INDEX && na1 == END_INDEX && pa2 - na2 < 2)
 		return INT_MAX;
-	if (pa2 == BEGIN_INDEX && na2 == END_INDEX)
+	if (pa2 == BEGIN_INDEX && na2 == END_INDEX && pa1 - na1 < 2)
 		return INT_MAX;
 
 	int p1[MAX_PATH]; int p1len; int p1time;
@@ -136,7 +166,7 @@ int consider_exchange(Solution* s, int d1, int b1, int e1, int d2, int b2, int e
 
 	int old_time_cost = TEST_IMPROVEMENT_MEASURE ? s->sum_all_times() : 0;
 	int old_overtime_cost = TEST_IMPROVEMENT_MEASURE ? get_overtime(s, obj->overtime_cost) : 0;
-
+	int old_max_time_cost = TEST_IMPROVEMENT_MEASURE ? get_max_time(s) : 0;
 
 	int change_in_time = INT_MAX;
 	int change_in_overtime = INT_MAX;
@@ -150,6 +180,7 @@ int consider_exchange(Solution* s, int d1, int b1, int e1, int d2, int b2, int e
 			trap();
 		}
 		break;
+		case max_time:
 		case times_sum:
 		{
 			int firstlen  = plength(s, d1, b1, e1);
@@ -164,22 +195,32 @@ int consider_exchange(Solution* s, int d1, int b1, int e1, int d2, int b2, int e
 			int ot = ot1 + ot2;
 
 			change_in_time = nt - ot;
-			if (obj->overtime_cost == 0)
+			if (obj->overtime_cost == 0 && obj->type == times_sum)
 			{
 				change_in_objective = change_in_time;
+				change_in_overtime = 0;
+				break;
 			}
 
 			int len, minindex;
 			int *ts = get_all_times(s, len);
-			int oldovertime = get_overtime_cost(ts, len, obj->overtime_cost, minindex);
+			int oldovertime = (obj->type == times_sum) ?
+					get_overtime_cost(ts, len, obj->overtime_cost, minindex) :
+					get_max_time(ts, len, minindex);
+
 
 			ts[d1] += nt1 - ot1;
 			ts[d2] += nt2 - ot2;
 
-			int newovertime = get_overtime_cost(ts, len, obj->overtime_cost, minindex);
+			int newovertime = (obj->type == times_sum) ?
+					get_overtime_cost(ts, len, obj->overtime_cost, minindex) :
+					get_max_time(ts, len, minindex);
+
 
 			change_in_overtime = newovertime - oldovertime;
 			change_in_objective = change_in_time + change_in_overtime;
+
+			delete[] ts;
 		}
 		break;
 		default:
@@ -252,6 +293,20 @@ int consider_exchange(Solution* s, int d1, int b1, int e1, int d2, int b2, int e
 				trap();
 			}
 		}
+		else if (obj->type == max_time)
+		{
+			int ntime = s->sum_all_times();
+			if (ntime != old_time_cost + change_in_time)
+			{
+				trap();
+			}
+
+			int novertime = get_max_time(s);
+			if (old_max_time_cost + change_in_overtime != novertime)
+			{
+				trap();
+			}
+		}
 		else
 		{
 			trap();
@@ -285,9 +340,9 @@ int consider_reschedule(Solution* s, int d1, int b1, int e1, int d2, int b2,
 	int na2 = s->get_action_index(d2, n2i);
 
 	// Never completely remove a driver's path
-	if (pa1 == BEGIN_INDEX && na1 == END_INDEX)
+	if (pa1 == BEGIN_INDEX && na1 == END_INDEX && pa2 - na2 < 2)
 		return INT_MAX;
-	if (pa2 == BEGIN_INDEX && na2 == END_INDEX)
+	if (pa2 == BEGIN_INDEX && na2 == END_INDEX && pa1 - na1 < 2)
 		return INT_MAX;
 
 	int p1[MAX_PATH]; int p1len; int p1time;
@@ -301,6 +356,7 @@ int consider_reschedule(Solution* s, int d1, int b1, int e1, int d2, int b2,
 
 	int old_time_cost = TEST_IMPROVEMENT_MEASURE ? s->sum_all_times() : 0;
 	int old_overtime_cost = TEST_IMPROVEMENT_MEASURE ? get_overtime(s, obj->overtime_cost) : 0;
+	int old_max_time_cost = TEST_IMPROVEMENT_MEASURE ? get_max_time(s) : 0;
 
 	int change_in_time = INT_MAX;
 	int change_in_overtime = INT_MAX;
@@ -313,9 +369,9 @@ int consider_reschedule(Solution* s, int d1, int b1, int e1, int d2, int b2,
 			trap();
 		}
 		break;
+#if 0
 		case max_time:
 		{
-#if 0
 			int cutlen = plength(s, d1, b1, e1);
 
 			int nt1 = p3time;
@@ -333,9 +389,10 @@ int consider_reschedule(Solution* s, int d1, int b1, int e1, int d2, int b2,
 				delete ts;
 				return INT_MAX;
 			}
-#endif
 		}
 		break;
+#endif
+		case max_time:
 		case times_sum:
 		{
 			int cutlen = plength(s, d1, b1, e1);
@@ -349,9 +406,11 @@ int consider_reschedule(Solution* s, int d1, int b1, int e1, int d2, int b2,
 			int ot = ot1 + ot2;
 
 			change_in_time = nt - ot;
-			if (obj->overtime_cost == 0)
+			if (obj->overtime_cost == 0 && obj->type == times_sum)
 			{
 				change_in_objective = change_in_time;
+				change_in_overtime = 0;
+				break;
 			}
 
 			int len, minindex;
@@ -359,10 +418,14 @@ int consider_reschedule(Solution* s, int d1, int b1, int e1, int d2, int b2,
 			int oldovertime = get_overtime_cost(ts, len, obj->overtime_cost, minindex);
 			ts[d1] += nt1 - ot1;
 			ts[d2] += nt2 - ot2;
-			int newovertime = get_overtime_cost(ts, len, obj->overtime_cost, minindex);
+			int newovertime = obj->type == times_sum ?
+					get_overtime_cost(ts, len, obj->overtime_cost, minindex) :
+					get_max_time(ts, len, minindex);
 
 			change_in_overtime = newovertime - oldovertime;
 			change_in_objective = change_in_time + change_in_overtime;
+
+			delete[] ts;
 		}
 		break;
 		default:
@@ -420,6 +483,20 @@ int consider_reschedule(Solution* s, int d1, int b1, int e1, int d2, int b2,
 
 			int novertime = get_overtime(s, obj->overtime_cost);
 			if (old_overtime_cost + change_in_overtime != novertime)
+			{
+				trap();
+			}
+		}
+		else if (obj->type == max_time)
+		{
+			int ntime = s->sum_all_times();
+			if (ntime != old_time_cost + change_in_time)
+			{
+				trap();
+			}
+
+			int novertime = get_max_time(s);
+			if (old_max_time_cost + change_in_overtime != novertime)
 			{
 				trap();
 			}
