@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 //	implement applying max of several possible moves
 //	debug why one bad request is not moved
 //	implement smart operation finder
-//	implement exchanges within single path
+//	implement exchanges within single path" + "
 //
 //	combine both exchange and reschedule
 //
@@ -46,7 +46,8 @@ int main(int argc, char **argv)
 //	show_robustness();
 //	solve();
 
-
 	std::cout << "done" << std::endl;
+
+	return 0;
 }
 

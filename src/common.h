@@ -11,6 +11,7 @@
 #include "logger.h"
 
 #include <iomanip>
+#include <sstream>
 
 void trap();
 
@@ -63,6 +64,19 @@ do                                                                              
 
 
 
+
+inline std::string c(const std::string& string, int number)
+{
+	std::stringstream ss;
+	ss << string << number;
+	return ss.str();
+}
+inline std::string c(int number, const std::string& string)
+{
+	std::stringstream ss;
+	ss << number << string;
+	return ss.str();
+}
 
 
 

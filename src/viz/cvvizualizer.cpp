@@ -135,7 +135,7 @@ namespace
 					err() << x << ", " << y << std::endl;
 					err() << "wth?" << std::endl;
 
-					trap();
+//					trap();
 				}
 
 				cv::line(istate->mat, prev, next, color, 1, 8, 0);
@@ -340,7 +340,7 @@ void cvvizualizer::snapshot(std::string file)
 {
 	std::lock_guard<std::mutex> lock{get_state(internal_state)->mut};
 	std::lock_guard<std::mutex> global{graphics_mutex};
-	cv::imwrite(get_state(internal_state)->name + "." + file + ".png", get_state(internal_state)->mat);
+	cv::imwrite("output/" + file + ".png", get_state(internal_state)->mat);
 }
 
 void cvvizualizer::write_frame_of_video()

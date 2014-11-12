@@ -103,7 +103,8 @@ void Viewer::snapshot(const std::string& name, const City* c, const std::string&
 		it = cvs.find(name);
 	}
 
-	trap();
+	it->second->show(c);
+	it->second->snapshot(filename);
 }
 
 void Viewer::status(const std::string& status)
