@@ -94,6 +94,30 @@ void insight_state::fast_match(const std::set<int>& avoid_actions)
 	destroy_video(video);
 }
 
+int get_time_to(const City* city, int prev, int hub, int driver=-1)
+{
+	if (state_is_full(city->get_action(prev, driver).exit_state))
+	{
+		int sum = 0;
+		int lindex = city->get_landfill_index(hub,
+				get_state_size(city->get_action(prev, driver).exit_state));
+		sum += city->get_time_to(driver, prev, lindex);
+
+		int sindex = city->get_staging_area_index(hub,
+				get_state_size(city->get_action(prev, driver).exit_state),
+				(dumpster_size) 0);
+		sum += city->get_time_to(driver, lindex, sindex);
+		return sum;
+	}
+	else
+	{
+		int sindex = city->get_staging_area_index(hub,
+				get_state_size(city->get_action(prev, driver).exit_state),
+				(dumpster_size) 0);
+		return city->get_time_to(driver, prev, sindex);
+	}
+}
+
 int insight_state::get_cost() const
 {
 	std::set<int> rem_pickups;
@@ -110,7 +134,9 @@ int insight_state::get_cost() const
 		}
 		else
 		{
-			sum += info->city->get_time_to(-1, info->deliver_actions[i], unmatched_delivers[i]);
+			fix this...
+			sum += info->city->get_time_to(-1, info->deliver_actions[i],
+					unmatched_delivers[i]);
 		}
 	}
 
