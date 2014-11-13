@@ -36,7 +36,10 @@ public:
 
 void *create_video()
 {
-	return new video_state;
+	if (USE_CV)
+		return new video_state;
+	else
+		return nullptr;
 }
 
 void destroy_video(void *video)
@@ -92,6 +95,10 @@ void draw_line(cv::Mat& canvas, const City *city, int begin_location, int end_lo
 
 void show_insight(const std::string& name, const insight_state* state, void *vid, const std::string& file)
 {
+	if (!USE_CV)
+	{
+		return;
+	}
 	const City* city = state->info->city;
 
 	video_state* video = (video_state*) vid;

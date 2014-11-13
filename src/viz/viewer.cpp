@@ -16,13 +16,13 @@ namespace
 }
 
 
-Viewer::Viewer() : on{true} {}
+Viewer::Viewer() : on{USE_CV ? true : false} {}
 
 Viewer::~Viewer() { turn_off(); }
 
 void Viewer::turn_on()
 {
-	on = true;
+	on = true && USE_CV;
 }
 
 void Viewer::turn_off()

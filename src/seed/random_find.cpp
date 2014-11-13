@@ -9,6 +9,8 @@
 
 #include "opts/find_path.h"
 
+void fix_ending(Solution* solution) {}
+
 Solution* get_random_solution_find(const City* c)
 {
 	Solution* sol = new Solution { c, c->num_actions };

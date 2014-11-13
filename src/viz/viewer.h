@@ -10,6 +10,9 @@
 
 #include "model/solution.h"
 
+#define USE_CV 0
+
+
 class Viewer
 {
 public:

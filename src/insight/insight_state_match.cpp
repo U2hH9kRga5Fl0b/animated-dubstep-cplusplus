@@ -111,11 +111,19 @@ int get_time_to(const City* city, int prev, int hub, int driver=-1)
 	}
 	else
 	{
+		truck_state st = city->get_action(prev, driver).exit_state;
 		int sindex = city->get_staging_area_index(hub,
-				get_state_size(city->get_action(prev, driver).exit_state),
-				(dumpster_size) 0);
+				get_state_size(st),
+				get_state_size(st) == 0 ? (dumpster_size) 6 : (dumpster_size) 0);
 		return city->get_time_to(driver, prev, sindex);
 	}
+}
+int get_time_from(const City* city, int hub, int next, int driver = -1)
+{
+	truck_state st = city->get_action(next, driver).entr_state;
+	int sindex = city->get_staging_area_index(hub,
+			get_state_size(st) == 0 ? (dumpster_size) 6 : (dumpster_size) 0, get_state_size(st));
+	return city->get_time_to(driver, sindex, next);
 }
 
 int insight_state::get_cost() const
@@ -125,18 +133,16 @@ int insight_state::get_cost() const
 	int sum = 0;
 	for (int i = 0; i < info->deliver_lens; i++)
 	{
-		sum += info->city->get_time_to(-1, deliver_depots[i], info->deliver_actions[i]);
+		sum += get_time_from(info->city, deliver_depots[i], info->deliver_actions[i]);
 		int pickup = delivers_to_pickups[i];
 		if (pickup >= 0)
 		{
 			sum += info->city->get_time_to(-1, info->deliver_actions[i], info->pickup_actions[pickup]);
-			sum += info->city->get_time_to(-1, info->pickup_actions[pickup], pickup_depots[pickup]);
+			sum += get_time_to(info->city,  info->pickup_actions[pickup], pickup_depots[pickup]);
 		}
 		else
 		{
-			fix this...
-			sum += info->city->get_time_to(-1, info->deliver_actions[i],
-					unmatched_delivers[i]);
+			sum += get_time_to(info->city, info->deliver_actions[i], unmatched_delivers[i]);
 		}
 	}
 
@@ -148,8 +154,8 @@ int insight_state::get_cost() const
 			continue;
 		}
 
-		sum += info->city->get_time_to(-1, pickup_depots[i], info->pickup_actions[i]);
-		sum += info->city->get_time_to(-1, pickup_depots[i], pickup_depot);
+		sum += get_time_from(info->city, pickup_depot, info->pickup_actions[i]);
+		sum += get_time_to(info->city, pickup_depots[i], pickup_depots[i]);
 	}
 
 	for (int i = 0; i < info->city->num_trucks; i++)
@@ -157,12 +163,12 @@ int insight_state::get_cost() const
 		if (embark[i].path[1] >= 0) trap();
 		if (embark[i].path[0] < 0)
 		{
-			sum += info->city->get_time_to(i, embark[i].begin, embark[i].end);
+			sum += get_time_to(info->city, embark[i].begin, embark[i].end, i);
 		}
 		else
 		{
 			sum += info->city->get_time_to(i, embark[i].begin,   embark[i].path[0]);
-			sum += info->city->get_time_to(i, embark[i].path[0], embark[i].end);
+			sum += get_time_to(info->city, embark[i].path[0], embark[i].end, i);
 		}
 		if (embark[i].end < 0)
 		{
@@ -170,15 +176,15 @@ int insight_state::get_cost() const
 			continue;
 		}
 
-		if (finish[i].path[1] >= 0) trap();
-		if (finish[i].path[0] < 0)
+		if (embark[i].path[1] >= 0) trap();
+		if (embark[i].path[0] < 0)
 		{
-			sum += info->city->get_time_to(i, finish[i].begin, finish[i].end);
+			sum += get_time_from(info->city, embark[i].begin, embark[i].end, i);
 		}
 		else
 		{
-			sum += info->city->get_time_to(i, finish[i].begin,   finish[i].path[0]);
-			sum += info->city->get_time_to(i, finish[i].path[0], finish[i].end);
+			sum += get_time_from(info->city, embark[i].begin,   embark[i].path[0], i);
+			sum += info->city->get_time_to(i, embark[i].path[0], embark[i].end);
 		}
 	}
 
