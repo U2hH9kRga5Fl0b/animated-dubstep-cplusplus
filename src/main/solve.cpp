@@ -64,6 +64,13 @@ void solve()
 
 #endif
 
+	objective tempor{0};
+	Solution* sol = get_random_solution_find(city);
+	while (apply_first_exchange(sol, &tempor, true))
+		;
+	delete do_something(city, sol);
+	if (true) return;
+
 	objective n{0};
 	objective o{};
 	objective n2{1};

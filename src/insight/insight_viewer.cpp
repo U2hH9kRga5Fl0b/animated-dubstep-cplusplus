@@ -104,43 +104,40 @@ void show_insight(const std::string& name, const insight_state* state, void *vid
 		init = true;
 	}
 
-	for (int s = 0; s < 4; s++)
-	{
 		// depots associated to delivers
-		for (int d = 0; d < state->info->deliver_lens[s]; d++)
+		for (int d = 0; d < state->info->deliver_lens; d++)
 		{
-			int da = state->info->deliver_actions[s][d];
+			int da = state->info->deliver_actions[d];
 			int dloc = city->get_action(da).location;
-			int ddloc = city->yards.at(state->deliver_depots[s][d]).location;
+			int ddloc = city->yards.at(state->deliver_depots[d]).location;
 			draw_line(canvas, city, ddloc, dloc, cv::Scalar { 255, 0, 0 }, get_deliver_size(city, da));
 		}
 
 		// depots associated to pickups
-		for (int p = 0; p < state->info->pickup_lens[s]; p++)
+		for (int p = 0; p < state->info->pickup_lens; p++)
 		{
-			int pa = state->info->pickup_actions[s][p];
+			int pa = state->info->pickup_actions[p];
 			int ploc = city->get_action(pa).location;
-			int pdloc = city->yards.at(state->pickup_depots[s][p]).location;
+			int pdloc = city->yards.at(state->pickup_depots[p]).location;
 			draw_line(canvas, city, pdloc, ploc, cv::Scalar { 0, 255, 0 }, get_pickup_size(city, pa));
 		}
 
 		// pickups associated to delivers
-		for (int d = 0; d < state->info->deliver_lens[s]; d++)
+		for (int d = 0; d < state->info->deliver_lens; d++)
 		{
-			int da = state->info->deliver_actions[s][d];
-			int pi = state->delivers_to_pickups[s][d];
+			int da = state->info->deliver_actions[d];
+			int pi = state->delivers_to_pickups[d];
 			if (pi < 0)
 			{
 				continue;
 			}
-			int pa = state->info->pickup_actions[s][pi];
+			int pa = state->info->pickup_actions[pi];
 
 			int dloc = city->get_action(da).location;
 			int ploc = city->get_action(pa).location;
 
 			draw_line(canvas, city, dloc, ploc, cv::Scalar { 0, 0, 255 }, "");
 		}
-	}
 
 	for (int i=0;i<100;i++)
 		video->vid.write(canvas);

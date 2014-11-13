@@ -44,5 +44,8 @@ Solution* get_random_solution_find(const City* c)
 
 	delete[] tmp;
 
+
+	fix_endings(sol);
+
 	return sol;
 }

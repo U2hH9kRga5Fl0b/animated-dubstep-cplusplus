@@ -12,7 +12,7 @@
  * http://sam.zoy.org/wtfpl/COPYING for more details.
  */
 
-#define VERBOSE_HUNGARIAN 1
+#define VERBOSE_HUNGARIAN 0
 
 
 

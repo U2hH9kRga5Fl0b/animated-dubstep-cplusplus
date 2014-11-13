@@ -38,7 +38,6 @@ namespace
 }
 
 
-
 pairing_info::pairing_info(const City* city_) :
 		city{city_},
 		num_staging_areas{(int) city->yards.size()},
@@ -69,25 +68,34 @@ pairing_info::pairing_info(const City* city_) :
 		deliver_actions[i] = *it;
 
 
-
-
-
-
-
-	std::sort(&pickup_actions[0], &pickup_actions[pickup_lens], [city](const int p1, const int p2)
-	{	return (city->get_action(p1).exit_state & TRUCK_SIZE_MASK) < (city->get_action(p2).exit_state & TRUCK_SIZE_MASK);});
-	std::sort(&deliver_actions[0], &deliver_actions[deliver_lens], [city](const int d1, const int d2)
-	{	return (city->get_action(d1).entr_state & TRUCK_SIZE_MASK) < (city->get_action(d2).entr_state & TRUCK_SIZE_MASK);});
+	std::sort(&pickup_actions[0], &pickup_actions[pickup_lens], [city_](const int p1, const int p2)
+	{	return (city_->get_action(p1).exit_state & TRUCK_SIZE_MASK) < (city_->get_action(p2).exit_state & TRUCK_SIZE_MASK);});
+	std::sort(&deliver_actions[0], &deliver_actions[deliver_lens], [city_](const int d1, const int d2)
+	{	return (city_->get_action(d1).entr_state & TRUCK_SIZE_MASK) < (city_->get_action(d2).entr_state & TRUCK_SIZE_MASK);});
 
 //	for (int i = 0; i < deliver_lens; i++)
 //		for (int j = 0; j <pickup_lens; j++)
 //			ret->d2p.at(i, j) = city->get_time_to(-1, ret->deliver_actions[i], ret->pickup_actions[j]);
 
-	dumpster_size sizes[4] = { six, nine, twelve, sixteen };
 
+
+
+
+	for (int i = 0; i < 4; i++)
+	{
+		deliver_sizes[i].begin = deliver_lens;
+		pickup_sizes[i].begin = pickup_lens;
+
+		deliver_sizes[i].end = 0;
+		pickup_sizes[i].end = 0;
+	}
+
+	bool found[4];
+	found[0] = found[1] = found[2] = found[3] = false;
 	for (int j = 0; j < pickup_lens; j++)
 	{
 		int size = d2i(city->get_action(pickup_actions[j]).exit_state & TRUCK_SIZE_MASK);
+		found[size] = true;
 		if (pickup_sizes[size].begin > j)
 		{
 			pickup_sizes[size].begin = j;
@@ -97,9 +105,20 @@ pairing_info::pairing_info(const City* city_) :
 			pickup_sizes[size].end = j+1;
 		}
 	}
+	for (int i = 0; i < 4; i++)
+	{
+		if (found[i])
+			continue;
+
+		pickup_sizes[i].begin = pickup_lens;
+		pickup_sizes[i].end = pickup_lens;
+	}
+
+	found[0] = found[1] = found[2] = found[3] = false;
 	for (int j = 0; j < deliver_lens; j++)
 	{
 		int size = d2i(city->get_action(deliver_actions[j]).entr_state & TRUCK_SIZE_MASK);
+		found[size] = true;
 		if (deliver_sizes[size].begin > j)
 		{
 			deliver_sizes[size].begin = j;
@@ -109,36 +128,26 @@ pairing_info::pairing_info(const City* city_) :
 			deliver_sizes[size].end = j+1;
 		}
 	}
-	if (DEBUG)
+
+	for (int i = 0; i < 4; i++)
 	{
-		INBOUNDS(0, deliver_sizes[0].begin, deliver_sizes[0].end);
-		INBOUNDS(deliver_sizes[0].end, deliver_sizes[1].begin, deliver_sizes[0].end+1);
+		if (found[i])
+			continue;
 
-		INBOUNDS(deliver_sizes[0].end, deliver_sizes[1].begin, deliver_sizes[1].end);
-		INBOUNDS(deliver_sizes[1].end, deliver_sizes[2].begin, deliver_sizes[1].end+1);
-
-		INBOUNDS(deliver_sizes[1].end, deliver_sizes[2].begin, deliver_sizes[2].end);
-		INBOUNDS(deliver_sizes[2].end, deliver_sizes[3].begin, deliver_sizes[2].end+1);
-
-		INBOUNDS(deliver_sizes[0].end, deliver_sizes[1].begin, deliver_sizes[1].end);
-		INBOUNDS(deliver_sizes[3].end, deliver_sizes[3].begin, deliver_lens);
-
-		INBOUNDS(0, -1 , 0);
+		deliver_sizes[i].begin = deliver_lens;
+		deliver_sizes[i].end = deliver_lens;
 	}
 
+	if (DEBUG)
+	{
 
-
-
-
-
-
-
-
-
-
-
-
-
+		for (int i = 0; i < 4; i++)
+			log() << pickup_sizes[i].begin << "-" << pickup_sizes[i].end << " ";
+		log () << std::endl;
+		for (int i = 0; i < 4; i++)
+			log() << deliver_sizes[i].begin << "-" << deliver_sizes[i].end << " ";
+		log () << std::endl;
+	}
 
 	closest_delivers = new int*[deliver_lens];
 	for (int i = 0; i < deliver_lens; i++)
@@ -184,14 +193,14 @@ int pairing_info::get_nth_closest_deliver_depot(int deliver_index, int n) const
 {
 	INBOUNDS(0, deliver_index, deliver_lens);
 	INBOUNDS(0, n, num_staging_areas);
-	return closest_delivers.at(deliver_index, n);
+	return closest_delivers[deliver_index][n];
 }
 
 int pairing_info::get_nth_closest_pickup_depot(int pickup_index, int n) const
 {
 	INBOUNDS(0, pickup_index, pickup_lens);
 	INBOUNDS(0, n, num_staging_areas);
-	return closest_pickups.at(pickup_index, n);
+	return closest_pickups[pickup_index][n];
 }
 
 #if 0

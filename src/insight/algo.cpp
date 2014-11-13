@@ -28,12 +28,22 @@
 
 
 
-Solution* do_something(City* city)
+Solution* do_something(City* city, Solution* solution)
 {
 	pairing_info info{city};
 
 	insight_state state{&info};
+
+	log() << *solution << std::endl;
+	insight_state state2 { &info, solution };
+	log() << state2 << std::endl;
+
+	log() << "sum = " << solution->sum_all_times() << std::endl;
+	log() << "state cost = " << state2.get_cost() << std::endl;
+
+	log() << state << std::endl;
 	state.fast_match();
+	log() << state << std::endl;
 
 	inter_hub_travel summary{state};
 	log() << summary << std::endl;

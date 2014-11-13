@@ -133,6 +133,18 @@ int consider_exchange(Solution* s, int d1, int b1, int e1, int d2, int b2, int e
 		return INT_MAX;
 	}
 
+	if (DEBUG)
+	{
+		for (int i = 0; i < s->get_num_drivers(); i++)
+		{
+			int action = s->get_action_index(i, s->get_number_of_stops(i)-1);
+			if (s->get_city()->get_action(action, i).exit_state != TRUCK_STATE_NONE)
+			{
+				trap();
+			}
+		}
+	}
+
 	int p1i = fpr(s, d1, b1);
 	int n1i = fnr(s, d1, e1);
 	int p2i = fpr(s, d2, b2);

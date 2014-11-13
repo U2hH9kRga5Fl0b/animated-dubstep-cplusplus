@@ -10,6 +10,6 @@
 
 #include "model/solution.h"
 
-Solution* do_something(City* city);
+Solution* do_something(City* city, Solution* solution);
 
 #endif /* ALGO_H_ */

@@ -5,6 +5,8 @@
  *      Author: thallock
  */
 
+#include "seed/seed.h"
+
 #include "opts/find_path.h"
 
 #include <set>
@@ -83,6 +85,8 @@ Solution* get_nearest_seed_find(const City* c)
 		}
 		sol->append(d, length + len, na);
 	}
+
+	fix_endings(sol);
 
 	return sol;
 }

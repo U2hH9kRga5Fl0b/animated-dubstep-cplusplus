@@ -18,6 +18,7 @@ Solution* get_nearest_seed_dfs(const City* c);
 Solution* get_random_solution_find(const City* c);
 Solution* get_nearest_seed_find(const City* c);
 
+void fix_endings(Solution* solution);
 
 
 #endif /* RANDOM_H_ */

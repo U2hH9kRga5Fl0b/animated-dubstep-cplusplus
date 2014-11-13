@@ -35,7 +35,7 @@ struct subarray
 	int end;
 
 	subarray() : begin{INT_MAX}, end{-1} {}
-}
+};
 
 
 class pairing_info

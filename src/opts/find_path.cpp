@@ -23,7 +23,9 @@ namespace
 	};
 }
 
-void find_path_between_requests(const Solution* solution, int driver, int a1, int a2, int *path, int& len, int& time)
+void find_path_between_requests(const Solution* solution,
+		int driver, int a1, int a2,
+		int *path, int& len, int& time)
 {
 	const City* c = solution->get_city();
 	if (a1 != BEGIN_INDEX && a1 != END_INDEX)

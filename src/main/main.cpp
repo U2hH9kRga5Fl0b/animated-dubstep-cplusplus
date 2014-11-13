@@ -39,12 +39,10 @@ int main(int argc, char **argv)
 
 	parse_args(argc, argv);
 
-	delete do_something(city);
-
 	viewer.pause();
 
 //	show_robustness();
-//	solve();
+	solve();
 
 	std::cout << "done" << std::endl;
 

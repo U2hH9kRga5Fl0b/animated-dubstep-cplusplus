@@ -11,59 +11,177 @@
 #include "c/hungarian.h"
 
 
+std::set<int> AVOID_NO_ACTIONS;
+
+
 #if 1
 
-void insight_state::fast_match()
+void insight_state::fast_match(const std::set<int>& avoid_actions)
 {
-	// for each dumpster size
-	for (int s = 0; s < 4; s++)
+	int number_of_deliveries = info->deliver_lens;
+	int number_of_pickups = info->pickup_lens;
+
+	if (number_of_deliveries == 0 || number_of_pickups == 0)
+		return;
+
+	intarray cost_matrix { number_of_deliveries, 2 * number_of_pickups };
+	if (cost_matrix.rows() > cost_matrix.cols())
 	{
-		int number_of_deliveries = info->deliver_lens[s];
-		int number_of_pickups = info->pickup_lens[s];
+		trap();
+	}
 
-		if (number_of_deliveries == 0 || number_of_pickups == 0)
-			continue;
+	auto avoid_end = avoid_actions.end();
 
-		intarray cost_matrix { number_of_deliveries, 2 * number_of_pickups };
-		if (cost_matrix.rows() > cost_matrix.cols())
+	for (int i = 0; i < number_of_deliveries; i++)
+	{
+		int da = info->deliver_actions[i];
+		int dloc = info->city->get_action(da).location;
+		int dd = false ? deliver_depots[i] : info->get_nth_closest_deliver_depot(i, 0);
+		int ddloc = info->city->yards.at(dd).location;
+
+		if (avoid_actions.find(da) != avoid_end)
 		{
-			trap();
-		}
-
-		for (int i = 0; i < number_of_deliveries; i++)
-		{
-			int da = info->deliver_actions[s][i];
-			int dloc = info->city->get_action(da).location;
-			int dd = false ? deliver_depots[s][i] : info->get_nth_closest_deliver_depot(s, i, 0);
-			int ddloc = info->city->yards.at(dd).location;
-
 			for (int j = 0; j < number_of_pickups; j++)
 			{
-				int pick = info->pickup_actions[s][j];
-				int ploc = info->city->get_action(pick).location;
-				int pd = false ? pickup_depots[s][j] : info->get_nth_closest_pickup_depot(s, j, 0);
-				int pdloc = info->city->yards.at(pd).location;
-
-				int paired_distance = info->city->durations.at(dloc, ploc);
-				int separt_distance = info->city->durations.at(dloc, ddloc) + info->city->durations.at(ploc, pdloc);
-
-				cost_matrix.at(i, j) = paired_distance;
-				cost_matrix.at(i, number_of_pickups + j) = separt_distance;
+				cost_matrix.at(i, j) = 1;
+				cost_matrix.at(i, j + number_of_pickups) = 0;
 			}
+			continue;
 		}
 
-		int *assignment = solve_assignment_problem(cost_matrix);
-		for (int i = 0; i < number_of_deliveries; i++)
-			if (assignment[i] < number_of_pickups)
-				delivers_to_pickups[s][i] = assignment[i];
-			else
-				delivers_to_pickups[s][i] = -1;
-		delete[] assignment;
+		int min_cost = 0;
+
+		for (int j = 0; j < number_of_pickups; j++)
+		{
+			int pick = info->pickup_actions[j];
+			int ploc = info->city->get_action(pick).location;
+			int pd = false ? pickup_depots[j] : info->get_nth_closest_pickup_depot(j, 0);
+			int pdloc = info->city->yards.at(pd).location;
+
+			int paired_distance = info->city->durations.at(dloc, ploc);
+			int separt_distance = info->city->durations.at(dloc, ddloc) + info->city->durations.at(ploc, pdloc);
+			int delta = avoid_actions.find(pick) != avoid_end ? INT_MAX : paired_distance - separt_distance;
+
+			cost_matrix.at(i, j) = delta;
+			// this line needs to be fixed...
+			cost_matrix.at(i, number_of_pickups + j) = 0;
+			min_cost = std::min(delta, min_cost);
+		}
+
+		const int ncools = cost_matrix.cols();
+		for (int j = 0; j < ncools; j++)
+		{
+			cost_matrix.at(i, j) += -min_cost;
+		}
 	}
+
+	log () << cost_matrix << std::endl;
+
+	int *assignment = solve_assignment_problem(cost_matrix);
+	for (int i = 0; i < number_of_deliveries; i++)
+	{
+		if (assignment[i] < number_of_pickups
+				&& avoid_actions.find(info->deliver_actions[i]) == avoid_end
+				&& avoid_actions.find(info->pickup_actions[assignment[i]]) == avoid_end)
+			match(i,  assignment[i]);
+		else
+			match(i, -1);
+	}
+	delete[] assignment;
 
 	void *video = create_video();
 	show_insight("foobar", this, video);
 	destroy_video(video);
+}
+
+int insight_state::get_cost() const
+{
+	std::set<int> rem_pickups;
+
+	int sum = 0;
+	for (int i = 0; i < info->deliver_lens; i++)
+	{
+		sum += info->city->get_time_to(-1, deliver_depots[i], info->deliver_actions[i]);
+		int pickup = delivers_to_pickups[i];
+		if (pickup >= 0)
+		{
+			sum += info->city->get_time_to(-1, info->deliver_actions[i], info->pickup_actions[pickup]);
+			sum += info->city->get_time_to(-1, info->pickup_actions[pickup], pickup_depots[pickup]);
+		}
+		else
+		{
+			sum += info->city->get_time_to(-1, info->deliver_actions[i], unmatched_delivers[i]);
+		}
+	}
+
+	for (int i = 0; i < info->pickup_lens; i++)
+	{
+		int pickup_depot = unmatched_pickups[i];
+		if (pickup_depot < 0)
+		{
+			continue;
+		}
+
+		sum += info->city->get_time_to(-1, pickup_depots[i], info->pickup_actions[i]);
+		sum += info->city->get_time_to(-1, pickup_depots[i], pickup_depot);
+	}
+
+	for (int i = 0; i < info->city->num_trucks; i++)
+	{
+		if (embark[i].path[1] >= 0) trap();
+		if (embark[i].path[0] < 0)
+		{
+			sum += info->city->get_time_to(i, embark[i].begin, embark[i].end);
+		}
+		else
+		{
+			sum += info->city->get_time_to(i, embark[i].begin,   embark[i].path[0]);
+			sum += info->city->get_time_to(i, embark[i].path[0], embark[i].end);
+		}
+		if (embark[i].end < 0)
+		{
+			// straight from begin to end...
+			continue;
+		}
+
+		if (finish[i].path[1] >= 0) trap();
+		if (finish[i].path[0] < 0)
+		{
+			sum += info->city->get_time_to(i, finish[i].begin, finish[i].end);
+		}
+		else
+		{
+			sum += info->city->get_time_to(i, finish[i].begin,   finish[i].path[0]);
+			sum += info->city->get_time_to(i, finish[i].path[0], finish[i].end);
+		}
+	}
+
+	return sum;
+}
+
+insight_state& insight_state::operator =(const insight_state& other)
+{
+	if (info != other.info)
+	{
+		trap();
+	}
+	for (int i = 0; i < info->deliver_lens; i++)
+	{
+		deliver_depots[i] = other.deliver_depots[i];
+		delivers_to_pickups[i] = other.delivers_to_pickups[i];
+		unmatched_delivers[i] = other.unmatched_delivers[i];
+	}
+	for (int i = 0; i < info->pickup_lens; i++)
+	{
+		pickup_depots[i] = other.pickup_depots[i];
+		unmatched_pickups[i] = other.unmatched_pickups[i];
+	}
+	for (int i = 0; i < info->city->num_trucks; i++)
+	{
+		embark[i] = other.embark[i];
+		finish[i] = other.finish[i];
+	}
+	return *this;
 }
 
 #elif 1
