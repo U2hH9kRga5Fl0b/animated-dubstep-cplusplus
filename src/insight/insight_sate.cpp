@@ -32,6 +32,8 @@ insight_state::insight_state(const pairing_info* info_) :
 
 	for (int i = 0; i < info->city->num_trucks; i++)
 	{
+		embark[i].begin = BEGIN_INDEX;
+		finish[i].end = END_INDEX;
 		embark[i].end = finish[i].end = 0;
 	}
 }
@@ -332,13 +334,13 @@ insight_state::insight_state(const pairing_info* info_, const Solution* solution
 		finish{new interhub[info->city->num_trucks]}
 {
 	const City* city = solution->get_city();
-	for (int i=0;i<info->pickup_lens;i++)
+	for (int i = 0; i < info->pickup_lens; i++)
 	{
 		deliver_depots[i] = -1;
 		unmatched_pickups[i] = -1;
 	}
 
-	for (int i=0;i<info->deliver_lens;i++)
+	for (int i = 0; i < info->deliver_lens; i++)
 	{
 		pickup_depots[i] = -1;
 		delivers_to_pickups[i] = -1;
@@ -411,6 +413,12 @@ insight_state::insight_state(const pairing_info* info_, const Solution* solution
 			}
 		}
 		while (true);
+	}
+
+	for (int i = 0; i < info->city->num_trucks; i++)
+	{
+		embark[i].begin = BEGIN_INDEX;
+		finish[i].end = END_INDEX;
 	}
 }
 

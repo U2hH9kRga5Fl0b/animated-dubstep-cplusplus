@@ -133,7 +133,7 @@ int consider_exchange(Solution* s, int d1, int b1, int e1, int d2, int b2, int e
 		return INT_MAX;
 	}
 
-	if (DEBUG)
+	if (DEBUG && false)
 	{
 		for (int i = 0; i < s->get_num_drivers(); i++)
 		{
