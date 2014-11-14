@@ -18,11 +18,12 @@ void fix_endings(Solution* ret_val)
 	for (int d = 0; d < numtrucks; d++)
 	{
 		int len = ret_val->get_number_of_stops(d);
-		if (len == 0)
+		int penultimate;
+		do
 		{
-			continue;
-		}
-		int penultimate = ret_val->get_action_index(d, len - 1);
+			penultimate = ret_val->get_action_index(d, --len);
+		} while (len >= 0 && !city->get_action(penultimate, d).value);
+
 		if (city->get_action(penultimate, d).exit_state == TRUCK_STATE_NONE)
 		{
 			// already done...
@@ -34,17 +35,21 @@ void fix_endings(Solution* ret_val)
 		int path[2];
 		find_path_between_requests(ret_val, d, penultimate, END_INDEX, &path[0], plen, ptime);
 
-		for (int s = 0; s < 2; s++)
-		{
-			if (path[s] < 0)
-			{
-				break;
-			}
+		ret_val->debug_stops();
 
-			ret_val->ensure_valid();
-			ret_val->append(d, len + s, path[s]);
-			ret_val->ensure_valid();
-		}
+		++len;
+
+		int oldlen = ret_val->get_number_of_stops(d);
+		for (int s = 0; s < plen; s++) {
+			ret_val->set_action(d, len + s, path[s]);
+			ret_val->debug_stops();}
+		for (int i = len + plen; i < oldlen; i++) {
+			ret_val->set_action(d, i , -1);
+			ret_val->debug_stops();}
+
+		ret_val->debug_stops();
 	}
+
+	ret_val->refresh();
 }
 

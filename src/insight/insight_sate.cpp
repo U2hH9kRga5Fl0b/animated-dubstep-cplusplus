@@ -336,13 +336,13 @@ insight_state::insight_state(const pairing_info* info_, const Solution* solution
 	const City* city = solution->get_city();
 	for (int i = 0; i < info->pickup_lens; i++)
 	{
-		deliver_depots[i] = -1;
 		unmatched_pickups[i] = -1;
+		pickup_depots[i] = -1;
 	}
 
 	for (int i = 0; i < info->deliver_lens; i++)
 	{
-		pickup_depots[i] = -1;
+		deliver_depots[i] = -1;
 		delivers_to_pickups[i] = -1;
 		unmatched_delivers[i] = -1;
 	}

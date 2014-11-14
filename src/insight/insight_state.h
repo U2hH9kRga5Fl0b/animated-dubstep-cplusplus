@@ -45,11 +45,6 @@ public:
 
 	int get_cost() const;
 	insight_state& operator=(const insight_state& other);
-
-
-	// ways to mutate:
-	// split D->P
-	//
 };
 
 

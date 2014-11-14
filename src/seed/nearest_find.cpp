@@ -34,10 +34,7 @@ public:
 };
 
 
-
 }
-
-void fix_endings(Solution* solution){}
 
 Solution* get_nearest_seed_find(const City* c)
 {

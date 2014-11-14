@@ -103,10 +103,16 @@ int get_time_to(const City* city, int prev, int hub, int driver=-1)
 				get_state_size(city->get_action(prev, driver).exit_state));
 		sum += city->get_time_to(driver, prev, lindex);
 
+		log() << city->get_time_to(driver, prev, lindex) << ' ';
+
 		int sindex = city->get_staging_area_index(hub,
 				get_state_size(city->get_action(prev, driver).exit_state),
 				(dumpster_size) 0);
 		sum += city->get_time_to(driver, lindex, sindex);
+
+
+		log() << city->get_time_to(driver, lindex, sindex) << ' ';
+
 		return sum;
 	}
 	else
@@ -115,6 +121,9 @@ int get_time_to(const City* city, int prev, int hub, int driver=-1)
 		int sindex = city->get_staging_area_index(hub,
 				get_state_size(st),
 				get_state_size(st) == 0 ? (dumpster_size) 6 : (dumpster_size) 0);
+
+		log() << city->get_time_to(driver, prev, sindex) << ' ';
+
 		return city->get_time_to(driver, prev, sindex);
 	}
 }
@@ -134,16 +143,22 @@ int insight_state::get_cost() const
 	for (int i = 0; i < info->deliver_lens; i++)
 	{
 		sum += get_time_from(info->city, deliver_depots[i], info->deliver_actions[i]);
+		log() << get_time_from(info->city, deliver_depots[i], info->deliver_actions[i]) << ' ';
+
 		int pickup = delivers_to_pickups[i];
 		if (pickup >= 0)
 		{
 			sum += info->city->get_time_to(-1, info->deliver_actions[i], info->pickup_actions[pickup]);
+			log() << info->city->get_time_to(-1, info->deliver_actions[i], info->pickup_actions[pickup]) << ' ';
+
 			sum += get_time_to(info->city,  info->pickup_actions[pickup], pickup_depots[pickup]);
 		}
 		else
 		{
 			sum += get_time_to(info->city, info->deliver_actions[i], unmatched_delivers[i]);
 		}
+
+		log () << std::endl;
 	}
 
 	for (int i = 0; i < info->pickup_lens; i++)
@@ -155,7 +170,9 @@ int insight_state::get_cost() const
 		}
 
 		sum += get_time_from(info->city, pickup_depot, info->pickup_actions[i]);
+		log() << get_time_from(info->city, pickup_depot, info->pickup_actions[i]);
 		sum += get_time_to(info->city, pickup_depots[i], pickup_depots[i]);
+		log () << std::endl;
 	}
 
 	for (int i = 0; i < info->city->num_trucks; i++)
