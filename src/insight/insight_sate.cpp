@@ -104,7 +104,7 @@ namespace
 {
 int get_depot(const City* city, int index)
 {
-	if (index > city->first_request_index)
+	if (index >= city->first_request_index)
 	{
 		return -1;
 	}
@@ -409,6 +409,10 @@ insight_state::insight_state(const pairing_info* info_, const Solution* solution
 			}
 			else
 			{
+				if ( parsed.end == 5)
+				{
+					log() << "yup";
+				}
 				unmatched_delivers[deliver_index] = parsed.end;
 			}
 		}
