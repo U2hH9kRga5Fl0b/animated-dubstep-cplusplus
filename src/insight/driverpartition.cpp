@@ -5,11 +5,7 @@
  *      Author: thallock
  */
 
-#include <insight/driverpartition.h>
-
-driver_partition::driver_partition() {}
-driver_partition::~driver_partition() {}
-
+#include "insight/driverpartition.h"
 
 subpath_collection::subpath_collection(const insight_state& state) :
 	num_yards{state.info->num_staging_areas},
@@ -71,6 +67,7 @@ subpath_collection::subpath_collection(const insight_state& state) :
 void subpath_collection::add_subpath(const interhub& subpath)
 {
 	subpaths[subpath.begin][subpath.end].push_back(sbp{num_subpaths++, subpath});
+	another_copy.push_back(subpath);
 }
 
 subpath_collection::~subpath_collection()
@@ -78,6 +75,11 @@ subpath_collection::~subpath_collection()
 	for (int i = 0; i < num_yards; i++)
 		delete[] subpaths[i];
 	delete[] subpaths;
+}
+
+interhub subpath_collection::get_subpath(int index) const
+{
+	return another_copy.at(index);
 }
 
 void print_subpath(int start, int current, bool* already_taken, std::list<interhub>& p, const subpath_collection* collection)
@@ -137,7 +139,154 @@ void subpath_collection::print_subpaths()
 	delete[] already_taken;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+combination_partition_search::combination_partition_search(const insight_state& state) :
+		collection{state},
+		num_drivers{state.info->city->num_trucks},
+//		num_yards{collection.num_yards},
+//		num_subpaths{collection.num_subpaths},
+
+		subpath_times{new int[collection.num_subpaths]},
+		subpath_drivers{new int[collection.num_subpaths]},
+		start_depots{new int[num_drivers]},
+
+
+		driver_times{new int[num_drivers]},
+		depots_entered{new std::set<int>[num_drivers]},
+		depots_exited{new std::set<int>[num_drivers]}
+{
+	for (int i = 0; i < collection.num_subpaths; i++)
+	{
+		subpath_drivers[i] = rand() % num_drivers;
+		subpath_times[i] = collection.get_subpath(i).get_time();
+	}
+
+	for (int i = 0; i < num_drivers; i++)
+		if ((start_depots[i] = state.embark[i].end) < 0)
+			trap();
+
+}
+
+
+#define INFEASIBILITY_COST 500
+
+
+combination_partition_search::~combination_partition_search()
+{
+	delete[] subpath_times;
+	delete[] subpath_drivers;
+	delete[] start_depots;
+	delete[] driver_times;
+	delete[] depots_entered;
+	delete[] depots_exited;
+}
+
+int combination_partition_search::get_current_time()
+{
+	for (int i = 0; i < num_drivers; i++)
+	{
+		driver_times[i] = 0;
+		depots_entered[i].clear();
+		depots_exited[i].clear();
+		depots_entered[i].insert(start_depots[i]);
+	}
+
+
+	for (int i = 0; i < collection.num_subpaths; i++)
+	{
+		const int driver = subpath_drivers[i];
+		driver_times[driver] += subpath_times[i];
+		depots_entered[driver].insert(collection.get_subpath(i).end);
+		depots_exited[driver].insert(collection.get_subpath(i).begin);
+	}
+
+
+	for (int i = 0; i < num_drivers; i++)
+	{
+		auto end = depots_exited[i].end();
+		for (auto it = depots_exited[i].begin(); it != end; ++it)
+		{
+			int depot = *it;
+			if (depots_entered[i].find(depot) != depots_entered[i].end())
+				continue;
+
+			// should be smarter, like find closest depot visited...
+			driver_times[i] += INFEASIBILITY_COST;
+		}
+	}
+
+	int max = 0;
+	int max_driver = 0;
+	for (int i = 0; i < num_drivers; i++)
+	{
+		if (driver_times[i] > max)
+		{
+			max = driver_times[i];
+			max_driver = i;
+		}
+	}
+	return max_driver;
+}
+
+bool combination_partition_search::consider_exchanging(int max_driver, int driver2)
+{
+
+	// consider swapping...
+	combination comb { 25, 10, false };
+	do
+	{
+		std::cout << comb << std::endl;
+	}
+	while (comb.increment());
+
+	return false;
+}
+
+void combination_partition_search::search()
+{
+	bool improved = true;
+	while (improved)
+	{
+		improved = false;
+		int max_driver = get_current_time();
+		for (int i = 0; i < num_drivers; i++)
+		if (consider_exchanging(max_driver, i))
+		{
+			improved = true;
+			break;
+		}
+	}
+}
+
+
+
 #if 0
+
 struct subset_tally
 {
 	int num_depots;

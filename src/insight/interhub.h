@@ -32,6 +32,8 @@ public:
 	bool is_end() const { return end < 0; }
 	bool has_requests() const { return path[0] >= 0; }
 	bool has_both_requests() const { return path[1] >= 0; }
+
+	int get_time() const { return begin + end + path[0] + path[1]; }; // bs
 };
 
 #endif /* INTERHUB_H_ */

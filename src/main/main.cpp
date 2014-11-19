@@ -8,12 +8,9 @@
 #include "main/global.h"
 
 
-
-
-
-
 #include "insight/algo.h"
 #include "c/hungarian.h"
+#include "combination.h"
 
 int main(int argc, char **argv)
 {
@@ -36,6 +33,9 @@ int main(int argc, char **argv)
 
 	// there is still a bug with the nearest one...
 	srand(5000007);
+
+
+
 
 	parse_args(argc, argv);
 
