@@ -253,8 +253,15 @@ int combination_partition_search::get_current_time()
 	return max_driver;
 }
 
+#define MAX_SUBSIZE 5
+
 bool combination_partition_search::consider_exchanging(int max_driver, int driver2)
 {
+
+
+
+
+
 
 	// consider swapping...
 	combination comb { 25, 10, false };
