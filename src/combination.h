@@ -23,7 +23,15 @@ public:
 	bool increment();
 
 	friend std::ostream& operator<<(std::ostream& out, const combination& comb);
+};
+
+
+class combination_iterator
+{
+		
 
 };
+
+
 
 #endif /* COMBINATION_H_ */
