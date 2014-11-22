@@ -45,7 +45,8 @@ Solution* do_something(City* city, Solution* solutio)
 	log() << *assignment << std::endl;
 	insight_state state2 { &info, assignment };
 	log() << state2 << std::endl;
-	subpath_collection{state2}.print_subpaths();
+//	subpath_collection{state2}.print_subpaths();
+	combination_partition_search{state2}.search();
 
 	log() << "sum = " << assignment->sum_all_times() << std::endl;
 	log() << "state cost = " << state2.get_cost() << std::endl;

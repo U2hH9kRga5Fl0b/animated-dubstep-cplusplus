@@ -62,3 +62,36 @@ std::ostream& operator<<(std::ostream& out, const combination& comb)
 	}
 	return out << "]";
 }
+
+combination_iterator::combination_iterator(int n, int m_k) :
+	comb{new combination{n,1}},
+	cur_k{1},
+	max_k{m_k} {}
+
+combination_iterator::~combination_iterator()
+{
+	delete comb;
+}
+
+const combination& combination_iterator::current() const
+{
+	return *comb;
+}
+
+bool combination_iterator::increment()
+{
+	if (comb->increment())
+		return true;
+	if (cur_k == max_k)
+		return false;
+	const int n = comb->n;
+	delete comb;
+	comb = new combination{n, ++cur_k};
+	return true;
+}
+
+
+
+
+
+

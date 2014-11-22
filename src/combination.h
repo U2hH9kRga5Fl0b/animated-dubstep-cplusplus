@@ -10,13 +10,13 @@
 
 #include "common.h"
 
-class combination
+struct combination
 {
 	int n, k;
 	int *current;
 
 	bool repeats;
-public:
+
 	combination(int n, int k, bool repeats=false);
 	~combination();
 
@@ -28,8 +28,21 @@ public:
 
 class combination_iterator
 {
-		
+		combination* comb;
+		int cur_k;
+		int max_k;
 
+public:
+		combination_iterator(int n, int m_k);
+		~combination_iterator();
+
+		const combination& current() const;
+		bool increment();
+
+		friend std::ostream& operator<<(std::ostream& out, const combination_iterator& comb)
+		{
+			return out << comb.current();
+		}
 };
 
 

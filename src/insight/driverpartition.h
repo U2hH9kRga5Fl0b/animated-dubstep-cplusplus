@@ -29,13 +29,14 @@ struct sbp
 
 class subpath_collection
 {
+public:
 	friend combination_partition_search;
+
 	int num_yards;
 	int num_subpaths;
 	std::vector<sbp> **subpaths;
 	std::vector<interhub> another_copy;
 
-public:
 	subpath_collection(const insight_state& state);
 	~subpath_collection();
 
@@ -50,23 +51,28 @@ public:
 
 class combination_partition_search
 {
+public:
+
 	const subpath_collection collection;
 	int num_drivers;
 
 	int *subpath_times;
-	int *subpath_drivers;
 	int *start_depots;
-	int *driver_times;
 
+	std::set<int> *assignment;
+
+	int *driver_times;
 	std::set<int> *depots_entered;
 	std::set<int> *depots_exited;
-public:
+
 	combination_partition_search(const insight_state& state);
 	~combination_partition_search();
 
 	int get_current_time();
 
-	bool consider_exchanging(int driver1, int driver2);
+	bool consider_all_exchanges(int driver1, int driver2, int max_subset_size);
+
+	friend std::ostream& operator<<(std::ostream& out, const combination_partition_search& search);
 
 	void search();
 };
