@@ -7,6 +7,7 @@
 
 #include "main/global.h"
 
+#include "threadpool.h"
 
 #include "insight/algo.h"
 #include "c/hungarian.h"
@@ -29,11 +30,32 @@ int main(int argc, char **argv)
 //	reimplement staging area capacity and truck types...
 
 
-
-
 	// there is still a bug with the nearest one...
 	srand(5000007);
 	parse_args(argc, argv);
+
+
+
+
+	{
+		thread_pool pool;
+
+		for (int i = 0; i < 5; i++)
+		{
+			pool.add_task_to_current_group([i]() -> void { std::cout << "from thread " << i << std::endl;});
+		}
+
+		return_value *value = pool.get_next_return_value();
+		pool.finish_executing_group();
+		delete pool.get_next_return_value();
+		delete pool.get_next_return_value();
+		delete value;
+	}
+
+
+
+	void stats();
+	stats();
 
 
 	show_robustness();

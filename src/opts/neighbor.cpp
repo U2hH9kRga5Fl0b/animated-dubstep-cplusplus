@@ -111,6 +111,10 @@ int get_max_time(int *times, int len, int& maxindex)
 	return sum + maxtime * len * len;
 }
 
+
+
+}
+
 int get_max_time(const Solution* solution)
 {
 	int len;
@@ -120,10 +124,6 @@ int get_max_time(const Solution* solution)
 	delete[] ts;
 	return ret;
 }
-
-
-}
-
 
 int consider_exchange(Solution* s, int d1, int b1, int e1, int d2, int b2, int e2, const objective *obj, bool apply)
 {

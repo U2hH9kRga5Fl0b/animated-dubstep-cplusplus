@@ -51,4 +51,7 @@ int consider_reschedule(Solution* s,
 		int d2, int b2,
 		const objective *obj, bool apply=true);
 
+
+int get_max_time(const Solution* solution);
+
 #endif /* NEIGHBOR_H_ */

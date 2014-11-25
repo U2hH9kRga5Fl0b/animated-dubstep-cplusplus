@@ -84,7 +84,7 @@ struct reduced_results
 City* reduce_city(const Solution* solution, int time);
 void mutate_city(City* city, int num_location_changes, int num_operation_changes);
 
-reduced_results *get_results(int ntrails, int num_locations, int change_types);
+void get_results(const std::string& filename);
 
 
 #endif /* REQUEST_CHANGES_H_ */

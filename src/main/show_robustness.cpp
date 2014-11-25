@@ -12,8 +12,6 @@
 
 void show_robustness()
 {
-	reduced_results *results = get_results(5, 3, 0);
-	log() << *results;
-	delete results;
+	get_results("output/robust/results.txt");
 }
 

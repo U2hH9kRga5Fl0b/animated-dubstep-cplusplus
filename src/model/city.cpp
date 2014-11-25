@@ -24,6 +24,9 @@
 #include <set>
 
 
+
+#define VERBOSE_CITY 0
+
 namespace
 {
 	inline int get_num_actions(int num_requests_, int num_landfills_, int num_stagingareas_)
@@ -190,6 +193,7 @@ void City::common_init()
 	for (int j = 0; j < num_locations; j++)
 		avg_drive_time += durations.at(i,j) = (int)(DIST_SCALE * coords[i].dist(coords[j]));
 
+	if (VERBOSE_CITY)
 	log() << "average drive time: " << (avg_drive_time / (60.0 * num_locations * (num_locations - 1))) << " minutes" << std::endl;
 
 	actions = donttouch.data();
@@ -219,6 +223,7 @@ void City::common_init()
 			avg_num_possibles++;
 		}
 	}
+	if (VERBOSE_CITY)
 	log() << "average number of possibles actions: " << (avg_num_possibles / num_actions) << std::endl;
 
 	first_landfill_index    = 0;
