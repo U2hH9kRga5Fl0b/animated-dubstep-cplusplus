@@ -133,7 +133,7 @@ Solution* get_best_solution(const City* city, int number_of_tries)
 
 void set_results(reduced_results* results, int i)
 {
-	City* city = new City { 70, 4, 4, 9 };
+	City* city = new City { 20, 4, 4, 9 };
 	viewer.snapshot("o", city, "robust/" + c(i, "_original"));
 
 	Solution* alternative1 = get_best_solution(city, 1);
@@ -141,8 +141,8 @@ void set_results(reduced_results* results, int i)
 	viewer.snapshot("a1", alternative1, "robust/" + c(i, "_alternate_1"));
 	viewer.snapshot("a2", alternative2, "robust/" + c(i, "_alternate_2"));
 
-	results->total_times1[i] = alternative1->sum_all_times(); //get_maximum_time();
-	results->total_times2[i] = alternative2->sum_all_times(); //get_maximum_time();
+	results->total_times1[i] = alternative1->sum_all_times();
+	results->total_times2[i] = alternative2->sum_all_times();
 
 	results->max_times[i] = std::min(alternative1->get_maximum_time(), alternative2->get_maximum_time());
 	results->cut_times[i] = rand() % results->max_times[i];
@@ -151,7 +151,7 @@ void set_results(reduced_results* results, int i)
 	viewer.snapshot("c1", reduced1, "robust/" + c(i, "_reduced_city_1"));
 	viewer.snapshot("c2", reduced2, "robust/" + c(i, "_reduced_city_2"));
 
-	int num_to_mutate = std::min(reduced1->num_requests, reduced2->num_requests) / 4;
+	int num_to_mutate = std::min(5, std::min(reduced1->num_requests, reduced2->num_requests) / 4);
 	mutate_city(reduced1, num_to_mutate, 0);
 	mutate_city(reduced2, num_to_mutate, 0);
 	viewer.snapshot("m1", reduced1, "robust/" + c(i, "_mutated_city_1"));
@@ -162,8 +162,8 @@ void set_results(reduced_results* results, int i)
 	viewer.snapshot("r1", reduced_best1, "robust/" + c(i, "_mutated_solution_1"));
 	viewer.snapshot("r2", reduced_best2, "robust/" + c(i, "_mutated_solution_2"));
 
-	results->reduced_times1[i] = reduced_best1->sum_all_times(); //get_maximum_time();
-	results->reduced_times2[i] = reduced_best2->sum_all_times(); //get_maximum_time();
+	results->reduced_times1[i] = reduced_best1->sum_all_times();
+	results->reduced_times2[i] = reduced_best2->sum_all_times();
 
 	delete city; delete alternative1; delete alternative2; delete reduced1; delete reduced2; delete reduced_best1; delete reduced_best2;
 }

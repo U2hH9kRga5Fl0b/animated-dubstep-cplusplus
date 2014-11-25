@@ -35,19 +35,13 @@ void fix_endings(Solution* ret_val)
 		int path[2];
 		find_path_between_requests(ret_val, d, penultimate, END_INDEX, &path[0], plen, ptime);
 
-		ret_val->debug_stops();
-
 		++len;
 
 		int oldlen = ret_val->get_number_of_stops(d);
-		for (int s = 0; s < plen; s++) {
+		for (int s = 0; s < plen; s++)
 			ret_val->set_action(d, len + s, path[s]);
-			ret_val->debug_stops();}
-		for (int i = len + plen; i < oldlen; i++) {
-			ret_val->set_action(d, i , -1);
-			ret_val->debug_stops();}
-
-		ret_val->debug_stops();
+		for (int i = len + plen; i < oldlen; i++)
+			ret_val->set_action(d, i, -1);
 	}
 
 	ret_val->refresh();

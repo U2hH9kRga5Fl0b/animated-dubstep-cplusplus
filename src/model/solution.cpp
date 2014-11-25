@@ -389,7 +389,7 @@ Coord Solution::interpolate_location_at(int driver, int time, int *action) const
 		prevloc = c->begin_actions[driver].location;
 		nextloc = c->final_actions[driver].location;
 	}
-	if (time < times.at(driver, 0))
+	else if (time < times.at(driver, 0))
 	{
 		ftime = 0;
 		mtime = c->durations.at(c->begin_actions[driver].location, c->get_action(stops.at(driver, 0)).location);

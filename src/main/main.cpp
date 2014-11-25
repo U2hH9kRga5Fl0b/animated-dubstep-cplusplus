@@ -35,10 +35,13 @@ int main(int argc, char **argv)
 	srand(5000007);
 	parse_args(argc, argv);
 
-	viewer.pause();
+
+	show_robustness();
+
+//	viewer.pause();
 
 //	show_robustness();
-	solve();
+//	solve();
 
 	std::cout << "done" << std::endl;
 

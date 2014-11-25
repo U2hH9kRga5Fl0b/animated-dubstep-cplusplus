@@ -10,7 +10,7 @@
 
 #include "model/solution.h"
 
-#define USE_CV 0
+#define USE_CV 1
 
 
 class Viewer
