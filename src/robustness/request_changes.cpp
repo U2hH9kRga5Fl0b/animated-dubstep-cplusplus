@@ -18,9 +18,6 @@
 #include <fstream>
 
 
-
-
-
 #include "opts/requests_exchange.h"
 
 City* reduce_city(const Solution* solution, int time)
@@ -165,12 +162,11 @@ Solution* get_best_solution(const City* city, int number_of_tries)
 #endif
 }
 
-std::string save_results(int i, int num_to_run)
+void save_results(int i, int num_to_run, std::ostream& results)
 {
-	std::stringstream results;
 	results << "" << i << " ";
 
-	City* city = new City { 50, 5, 5, 10 };
+	City* city = new City { 50, 4, 4, 10 };
 	viewer.snapshot("o", city, "robust/" + c(i, "_original"));
 
 	log () << "finding best for city1" << std::endl;
@@ -211,6 +207,7 @@ std::string save_results(int i, int num_to_run)
 		int reduced_time2 = reduced_best2->sum_all_times();
 
 		results << cut_time << " " << reduced_time1 << " " << reduced_time2 << " ";
+		results.flush();
 
 		delete reduced1; delete reduced2; delete reduced_best1; delete reduced_best2;
 
@@ -219,9 +216,7 @@ std::string save_results(int i, int num_to_run)
 
 	delete city; delete alternative1; delete alternative2;
 
-	results << '\n';
-
-	return results.str();
+	results << std::endl;
 }
 
 void get_results(const std::string& filename)
@@ -232,7 +227,7 @@ void get_results(const std::string& filename)
 	// could be ran in parallel...
 	for (int i = 0; i < ntrials; i++)
 	{
-		res << save_results(i, 50);
+		save_results(i, 20, res);
 		log() << "done with set " << i << " of " << ntrials << std::endl;
 	}
 }

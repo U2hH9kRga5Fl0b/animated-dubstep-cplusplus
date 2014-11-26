@@ -18,8 +18,14 @@
 
 #define DIST_SCALE 5000
 
-// This doesn't work because there is no operation for 'replacing' a dumpster at a yard.
+
 #define ALL_YARD_COMBOS 1
+
+#define LENIENT_DUMPSTER_SIZES 1
+
+
+
+
 
 #include <set>
 
