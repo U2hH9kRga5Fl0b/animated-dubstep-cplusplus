@@ -28,6 +28,7 @@
 
 namespace
 {
+	constexpr int thickness = 2;
 	std::mutex graphics_mutex;
 
 	class state
@@ -49,14 +50,14 @@ namespace
 			cvNamedWindow(name.c_str(), CV_WINDOW_AUTOSIZE);
 			cvMoveWindow(name.c_str(), 100,100);
 
-			colors.push_back(cv::Scalar { 0, 0, 0 });
-			colors.push_back(cv::Scalar { 0, 0, 0 });
-			colors.push_back(cv::Scalar { 0, 0, 0 });
-			colors.push_back(cv::Scalar { 0, 0, 0 });
-			colors.push_back(cv::Scalar { 0, 0, 0 });
-			colors.push_back(cv::Scalar { 0, 0, 0 });
-			colors.push_back(cv::Scalar { 0, 0, 0 });
-			colors.push_back(cv::Scalar { 0, 0, 0 });
+			colors.push_back(cv::Scalar {   0,   0, 150 });
+			colors.push_back(cv::Scalar {   0, 150,   0 });
+			colors.push_back(cv::Scalar { 150,   0,   0 });
+			colors.push_back(cv::Scalar { 150, 150,   0 });
+			colors.push_back(cv::Scalar { 150,   0, 150 });
+			colors.push_back(cv::Scalar {   0, 150, 150 });
+			colors.push_back(cv::Scalar { 150,  10,  10 });
+			colors.push_back(cv::Scalar {   0,  10, 150 });
 		}
 		~state() {}
 
@@ -138,7 +139,7 @@ namespace
 //					trap();
 				}
 
-				cv::line(istate->mat, prev, next, color, 1, 8, 0);
+				cv::line(istate->mat, prev, next, color, thickness, 8, 0);
 
 				prev = next;
 			}
@@ -148,7 +149,7 @@ namespace
 			x = istate->mat.cols * (c.x - minx) / (maxx - minx);
 			y = istate->mat.rows * (c.y - miny) / (maxy - miny);
 			cv::Point next((int) x, (int) y);
-			cv::line(istate->mat, prev, next, color, 1, 8, 0);
+			cv::line(istate->mat, prev, next, color, thickness, 8, 0);
 		}
 
 		std::stringstream s;
@@ -177,6 +178,13 @@ namespace
 
 			prev.x = prev.x - 20;
 			prev.y = prev.y - 10;
+			std::string desc{c->get_decription(i)};
+			if (desc.at(0) == 's' && desc.at(1) == 't' && desc.at(2) == 'o')
+			{
+				// hack to make sure start and stop are not printed on top of each other.
+				prev.y += 30;
+			}
+
 			cv::putText(istate->mat, c->get_decription(i), prev, CV_FONT_HERSHEY_PLAIN, 1.0, color);
 		}
 	}
@@ -249,7 +257,7 @@ namespace
 				cv::circle(istate->mat, next, 3, color);
 				if (prev.x != -1 && prev.y != -1)
 				{
-					cv::line(istate->mat, prev, next, color, 1, 8, 0);
+					cv::line(istate->mat, prev, next, color, thickness, 8, 0);
 				}
 				next = prev;
 			}
@@ -345,6 +353,7 @@ void cvvizualizer::snapshot(std::string file)
 
 void cvvizualizer::write_frame_of_video()
 {
+	if(true) return;
 	state* istate = get_state(internal_state);
 // must be already locked...
 //	std::lock_guard<std::mutex> lock{istate->mut};

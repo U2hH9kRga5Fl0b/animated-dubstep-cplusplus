@@ -31,7 +31,7 @@ int main(int argc, char **argv)
 
 
 	// there is still a bug with the nearest one...
-	srand(5000009);
+	srand(5000010);
 	parse_args(argc, argv);
 
 
@@ -55,18 +55,19 @@ int main(int argc, char **argv)
 
 
 	void stats();
-	stats();
+//	stats();
 
 
-	show_robustness();
+//	show_robustness();
 
 //	viewer.pause();
 
 //	show_robustness();
-//	solve();
+	solve();
 
 	std::cout << "done" << std::endl;
 
 	return 0;
 }
+
 

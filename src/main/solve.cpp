@@ -19,10 +19,19 @@
 void summarize(std::ostream& out, const objective* obj, const std::string& name)
 {
 	Solution* sol = get_random_solution_find(city);
+	viewer.snapshot(name, sol, "rand_" + name);
+
 	log () << "begin cost " << name << ": " << sol->sum_all_times() << std::endl;
 
+	int co = 0;
 	while (apply_first_exchange(sol, obj, true))
+	{
 		viewer.show(name, sol);
+		if (co++ < 5)
+		{
+			viewer.snapshot(name, sol, c(co, "_rand") + name);
+		}
+	}
 
 	out << "with overtime cost: " << obj->overtime_cost;
 	out << "\ndriver: \n\t" << std::endl;
@@ -68,8 +77,8 @@ void solve()
 	Solution* sol = get_random_solution_find(city);
 	while (apply_first_exchange(sol, &tempor, true))
 		;
-	delete do_something(city, sol);
-	if (true) return;
+//	delete do_something(city, sol);
+//	if (true) return;
 
 	objective n{0};
 	objective o{};

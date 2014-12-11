@@ -166,7 +166,7 @@ void save_results(int i, int num_to_run, std::ostream& results)
 {
 	results << "" << i << " ";
 
-	City* city = new City { 50, 4, 4, 10 };
+	City* city = new City { 30, 3, 3, 3 };
 	viewer.snapshot("o", city, "robust/" + c(i, "_original"));
 
 	log () << "finding best for city1" << std::endl;
@@ -175,6 +175,15 @@ void save_results(int i, int num_to_run, std::ostream& results)
 	Solution* alternative2 = get_best_solution(city, 1);
 	viewer.snapshot("a1", alternative1, "robust/" + c(i, "_alternate_1"));
 	viewer.snapshot("a2", alternative2, "robust/" + c(i, "_alternate_2"));
+
+	{
+		std::ofstream a1file {"./output/robust/" + c(i, "_alternate_1.txt")};
+		a1file << *alternative1 << std::endl;
+	}
+	{
+		std::ofstream a2file {"./output/robust/" + c(i, "_alternate_2.txt")};
+		a2file << *alternative2 << std::endl;
+	}
 
 	int total_times1 = alternative1->sum_all_times();
 	int total_times2 = alternative2->sum_all_times();
@@ -189,19 +198,19 @@ void save_results(int i, int num_to_run, std::ostream& results)
 
 		City* reduced1 = reduce_city(alternative1, cut_time);
 		City* reduced2 = reduce_city(alternative2, cut_time);
-		viewer.snapshot("c1", reduced1, "robust/" + c(j, "_" + c(i, "_reduced_city_1")));
-		viewer.snapshot("c2", reduced2, "robust/" + c(j, "_" + c(i, "_reduced_city_2")));
+		viewer.snapshot("c1", reduced1, "robust/" + c(i, "_" + c(j, "_reduced_city_1")));
+		viewer.snapshot("c2", reduced2, "robust/" + c(i, "_" + c(j, "_reduced_city_2")));
 
 		int num_to_mutate = std::min(5, std::min(reduced1->num_requests, reduced2->num_requests) / 4);
 		mutate_city(reduced1, num_to_mutate, 0);
 		mutate_city(reduced2, num_to_mutate, 0);
-		viewer.snapshot("m1", reduced1, "robust/" +c(j, "_" +  c(i, "_mutated_city_1")));
-		viewer.snapshot("m2", reduced2, "robust/" +c(j, "_" +  c(i, "_mutated_city_2")));
+		viewer.snapshot("m1", reduced1, "robust/" +c(i, "_" +  c(j, "_mutated_city_1")));
+		viewer.snapshot("m2", reduced2, "robust/" +c(i, "_" +  c(j, "_mutated_city_2")));
 
 		Solution *reduced_best1 = get_best_solution(reduced1, 160);
 		Solution *reduced_best2 = get_best_solution(reduced2, 160);
-		viewer.snapshot("r1", reduced_best1, "robust/" + c(j, "_" + c(i, "_mutated_solution_1")));
-		viewer.snapshot("r2", reduced_best2, "robust/" + c(j, "_" + c(i, "_mutated_solution_2")));
+		viewer.snapshot("r1", reduced_best1, "robust/" + c(i, "_" + c(j, "_mutated_solution_1")));
+		viewer.snapshot("r2", reduced_best2, "robust/" + c(i, "_" + c(j, "_mutated_solution_2")));
 
 		int reduced_time1 = reduced_best1->sum_all_times();
 		int reduced_time2 = reduced_best2->sum_all_times();
@@ -227,7 +236,7 @@ void get_results(const std::string& filename)
 	// could be ran in parallel...
 	for (int i = 0; i < ntrials; i++)
 	{
-		save_results(i, 20, res);
+		save_results(i, 5, res);
 		log() << "done with set " << i << " of " << ntrials << std::endl;
 	}
 }
